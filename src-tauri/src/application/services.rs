@@ -54,9 +54,10 @@ impl<R: BookRepository> BookService<R> {
         published_year: Option<i32>,
     ) -> Result<BookDto, ApplicationError> {
         // 1. 既存の本を取得
-        let mut book = self.repository.find_by_id(id).await?.ok_or_else(|| {
-            ApplicationError::NotFound(format!("Book with id {} not found", id))
-        })?;
+        let mut book =
+            self.repository.find_by_id(id).await?.ok_or_else(|| {
+                ApplicationError::NotFound(format!("Book with id {} not found", id))
+            })?;
 
         // 2. ドメインロジックで更新（バリデーション実行）
         book.update_details(title, author, description, published_year)?;
@@ -71,9 +72,10 @@ impl<R: BookRepository> BookService<R> {
     /// 本を削除
     pub async fn delete_book(&self, id: i32) -> Result<(), ApplicationError> {
         // 存在確認
-        self.repository.find_by_id(id).await?.ok_or_else(|| {
-            ApplicationError::NotFound(format!("Book with id {} not found", id))
-        })?;
+        self.repository
+            .find_by_id(id)
+            .await?
+            .ok_or_else(|| ApplicationError::NotFound(format!("Book with id {} not found", id)))?;
 
         // 削除実行
         self.repository.delete(id).await?;
@@ -81,4 +83,3 @@ impl<R: BookRepository> BookService<R> {
         Ok(())
     }
 }
-

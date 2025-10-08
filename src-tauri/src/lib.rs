@@ -58,7 +58,7 @@ async fn execute_graphql(
     schema: tauri::State<'_, AppSchema>,
 ) -> Result<String, String> {
     let result = schema.execute(&query).await;
-    Ok(serde_json::to_string(&result).map_err(|e| e.to_string())?)
+    serde_json::to_string(&result).map_err(|e| e.to_string())
 }
 
 /// データベース接続状態を取得

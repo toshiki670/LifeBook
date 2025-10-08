@@ -7,7 +7,6 @@ use std::fmt;
 pub enum ApplicationError {
     DomainError(DomainError),
     NotFound(String),
-    InternalError(String),
 }
 
 impl fmt::Display for ApplicationError {
@@ -15,7 +14,6 @@ impl fmt::Display for ApplicationError {
         match self {
             ApplicationError::DomainError(e) => write!(f, "Domain error: {}", e),
             ApplicationError::NotFound(msg) => write!(f, "Not found: {}", msg),
-            ApplicationError::InternalError(msg) => write!(f, "Internal error: {}", msg),
         }
     }
 }
@@ -27,4 +25,3 @@ impl From<DomainError> for ApplicationError {
         ApplicationError::DomainError(error)
     }
 }
-

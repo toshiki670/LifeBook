@@ -14,4 +14,3 @@ pub fn build_schema(service: Arc<BookService<BookRepositoryImpl>>) -> AppSchema 
         .data(service)
         .finish()
 }
-

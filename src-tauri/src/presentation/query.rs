@@ -33,4 +33,3 @@ impl QueryRoot {
             .map_err(|e| Error::new(e.to_string()))
     }
 }
-

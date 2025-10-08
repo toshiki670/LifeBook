@@ -3,7 +3,7 @@
 use super::models;
 use crate::domain::{entities::Book, errors::DomainError, repositories::BookRepository};
 use async_trait::async_trait;
-use sea_orm::{entity::prelude::*, ActiveModelTrait, DatabaseConnection, NotSet, Set};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, NotSet, Set, entity::prelude::*};
 
 /// BookRepository の SeaORM実装
 pub struct BookRepositoryImpl {
@@ -109,4 +109,3 @@ impl BookRepository for BookRepositoryImpl {
         Ok(())
     }
 }
-

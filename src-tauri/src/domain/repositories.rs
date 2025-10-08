@@ -19,4 +19,3 @@ pub trait BookRepository: Send + Sync {
     /// 本を削除
     async fn delete(&self, id: i32) -> Result<(), DomainError>;
 }
-

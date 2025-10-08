@@ -62,4 +62,3 @@ impl MutationRoot {
         Ok(true)
     }
 }
-
