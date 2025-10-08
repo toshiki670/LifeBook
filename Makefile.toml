@@ -1,0 +1,24 @@
+[config]
+default_to_workspace = false
+
+[tasks.fix]
+description = "Fix the code"
+category = "Development"
+cwd = "src-tauri"
+script = ['''
+cargo fix --allow-dirty --allow-staged
+cargo fmt
+cargo clippy --fix --allow-dirty --allow-staged
+''']
+
+[tasks.fix-with-ai]
+description = "Fix the code with AI assistance"
+category = "Development"
+script = ['''
+OUTPUT=$(cargo make fix 2>&1)
+echo "$OUTPUT"
+echo "$OUTPUT" | cursor-agent "Fix these Rust linter issues in src-tauri: "
+echo ""
+echo "=== Running final fix to verify changes ==="
+cargo make fix
+''']
