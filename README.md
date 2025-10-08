@@ -31,12 +31,13 @@ A desktop application demonstrating the integration of **Tauri**, **SeaORM**, an
 
 This project showcases how to build a desktop application that:
 
-1. Uses GraphQL as the API layer between frontend and backend
-2. Leverages SeaORM for database operations
-3. Maintains type safety across the entire stack
-4. Implements CRUD operations through GraphQL mutations and queries
+1. **Full DDD Architecture**: Implements Domain-Driven Design with 4 layers (Domain, Application, Infrastructure, Presentation)
+2. **GraphQL API**: Uses GraphQL as the API layer between frontend and backend
+3. **SeaORM**: Leverages SeaORM for database operations with repository pattern
+4. **Type Safety**: Maintains type safety across the entire stack
+5. **Clean Architecture**: Clear separation of concerns with dependency inversion
 
-See [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md) for detailed documentation.
+See [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md) and [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) for detailed documentation.
 
 ## 🛠️ Development
 
@@ -75,15 +76,29 @@ LifeBook/
 │   │   ├── home.tsx       # Home page
 │   │   └── books.tsx      # Books management (GraphQL demo)
 │   └── root.tsx           # Root component
-├── src-tauri/             # Rust backend
+├── src-tauri/             # Rust backend (DDD Architecture)
 │   ├── src/
-│   │   ├── lib.rs         # Main entry point
+│   │   ├── domain/        # Domain Layer
+│   │   │   ├── entities.rs
+│   │   │   ├── repositories.rs
+│   │   │   └── errors.rs
+│   │   ├── application/   # Application Layer
+│   │   │   ├── services.rs
+│   │   │   ├── dto.rs
+│   │   │   └── errors.rs
+│   │   ├── infrastructure/ # Infrastructure Layer
+│   │   │   ├── models.rs
+│   │   │   └── repositories.rs
+│   │   ├── presentation/  # Presentation Layer
+│   │   │   ├── query.rs
+│   │   │   ├── mutation.rs
+│   │   │   └── schema.rs
+│   │   ├── lib.rs         # Entry point & DI
 │   │   ├── database.rs    # Database connection
-│   │   ├── migration.rs   # DB migrations (sea-orm-migration)
-│   │   ├── entities.rs    # SeaORM entities
-│   │   └── graphql/       # GraphQL schema & resolvers
+│   │   └── migration.rs   # DB migrations
 │   └── Cargo.toml         # Rust dependencies
-└── GRAPHQL_GUIDE.md       # Detailed documentation
+├── GRAPHQL_GUIDE.md       # GraphQL integration guide
+└── CODING_GUIDELINES.md   # DDD architecture & coding standards
 ```
 
 ## 🎓 Learning Resources
