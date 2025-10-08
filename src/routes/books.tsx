@@ -119,7 +119,7 @@ export default function Books() {
         <h2 className="text-2xl font-semibold mb-4">新しい本を追加</h2>
         <form onSubmit={handleCreateBook} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               タイトル <span className="text-red-500">*</span>
             </label>
             <input
@@ -127,41 +127,41 @@ export default function Books() {
               required
               value={newBook.title}
               onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               placeholder="本のタイトル"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">著者</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">著者</label>
             <input
               type="text"
               value={newBook.author}
               onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               placeholder="著者名"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">説明</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">説明</label>
             <textarea
               value={newBook.description}
               onChange={(e) =>
                 setNewBook({ ...newBook, description: e.target.value })
               }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               placeholder="本の説明"
               rows={3}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">出版年</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">出版年</label>
             <input
               type="number"
               value={newBook.publishedYear}
               onChange={(e) =>
                 setNewBook({ ...newBook, publishedYear: e.target.value })
               }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
               placeholder="2024"
             />
           </div>
