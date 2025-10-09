@@ -1,26 +1,24 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core"
 
-export interface GraphQLResponse<T = any> {
-  data?: T;
+export interface GraphQLResponse<T = unknown> {
+  data?: T
   errors?: Array<{
-    message: string;
-    locations?: Array<{ line: number; column: number }>;
-    path?: string[];
-  }>;
+    message: string
+    locations?: Array<{ line: number; column: number }>
+    path?: string[]
+  }>
 }
 
 /**
  * GraphQLクエリを実行
  */
-export async function executeGraphQL<T = any>(
-  query: string
-): Promise<GraphQLResponse<T>> {
+export async function executeGraphQL<T = unknown>(query: string): Promise<GraphQLResponse<T>> {
   try {
-    const result = await invoke<string>("execute_graphql", { query });
-    return JSON.parse(result);
+    const result = await invoke<string>("execute_graphql", { query })
+    return JSON.parse(result)
   } catch (error) {
-    console.error("GraphQL execution error:", error);
-    throw error;
+    console.error("GraphQL execution error:", error)
+    throw error
   }
 }
 
@@ -38,8 +36,8 @@ export async function getBooks() {
         publishedYear
       }
     }
-  `;
-  return executeGraphQL(query);
+  `
+  return executeGraphQL(query)
 }
 
 /**
@@ -56,18 +54,18 @@ export async function getBook(id: number) {
         publishedYear
       }
     }
-  `;
-  return executeGraphQL(query);
+  `
+  return executeGraphQL(query)
 }
 
 /**
  * 新しい本を作成
  */
 export async function createBook(book: {
-  title: string;
-  author?: string;
-  description?: string;
-  publishedYear?: number;
+  title: string
+  author?: string
+  description?: string
+  publishedYear?: number
 }) {
   const query = `
     mutation {
@@ -84,8 +82,8 @@ export async function createBook(book: {
         publishedYear
       }
     }
-  `;
-  return executeGraphQL(query);
+  `
+  return executeGraphQL(query)
 }
 
 /**
@@ -94,18 +92,17 @@ export async function createBook(book: {
 export async function updateBook(
   id: number,
   updates: {
-    title?: string;
-    author?: string;
-    description?: string;
-    publishedYear?: number;
-  }
+    title?: string
+    author?: string
+    description?: string
+    publishedYear?: number
+  },
 ) {
-  const fields = [];
-  if (updates.title) fields.push(`title: "${updates.title}"`);
-  if (updates.author) fields.push(`author: "${updates.author}"`);
-  if (updates.description) fields.push(`description: "${updates.description}"`);
-  if (updates.publishedYear)
-    fields.push(`publishedYear: ${updates.publishedYear}`);
+  const fields = []
+  if (updates.title) fields.push(`title: "${updates.title}"`)
+  if (updates.author) fields.push(`author: "${updates.author}"`)
+  if (updates.description) fields.push(`description: "${updates.description}"`)
+  if (updates.publishedYear) fields.push(`publishedYear: ${updates.publishedYear}`)
 
   const query = `
     mutation {
@@ -117,8 +114,8 @@ export async function updateBook(
         publishedYear
       }
     }
-  `;
-  return executeGraphQL(query);
+  `
+  return executeGraphQL(query)
 }
 
 /**
@@ -129,14 +126,13 @@ export async function deleteBook(id: number) {
     mutation {
       deleteBook(id: ${id})
     }
-  `;
-  return executeGraphQL(query);
+  `
+  return executeGraphQL(query)
 }
 
 /**
  * データベース接続状態を確認
  */
 export async function getDbStatus(): Promise<string> {
-  return invoke<string>("get_db_status");
+  return invoke<string>("get_db_status")
 }
-
