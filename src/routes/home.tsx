@@ -1,6 +1,7 @@
 import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
 import { Link } from "react-router";
+import { Button } from "~/components/ui/button";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -14,12 +15,11 @@ export default function Home() {
     <div>
       <Welcome />
       <div className="flex justify-center mt-8">
-        <Link
-          to="/books"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg"
-        >
-          📚 Book Manager (GraphQL Demo) へ
-        </Link>
+        <Button asChild size="lg">
+          <Link to="/books">
+            📚 Book Manager (GraphQL Demo) へ
+          </Link>
+        </Button>
       </div>
     </div>
   );
