@@ -1,114 +1,110 @@
-import { useEffect, useState } from "react";
-import type { Route } from "./+types/books";
-import { getBooks, createBook, deleteBook, getDbStatus } from "../lib/graphql";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Label } from "~/components/ui/label";
-import { Alert, AlertDescription } from "~/components/ui/alert";
+import { useCallback, useEffect, useState } from "react"
+import { Alert, AlertDescription } from "~/components/ui/alert"
+import { Button } from "~/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
+import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
+import { Textarea } from "~/components/ui/textarea"
+import { createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
+import type { Route } from "./+types/books"
 
 interface Book {
-  id: number;
-  title: string;
-  author?: string;
-  description?: string;
-  publishedYear?: number;
+  id: number
+  title: string
+  author?: string
+  description?: string
+  publishedYear?: number
 }
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs) {
   return [
     { title: "Book Manager - LifeBook" },
     { name: "description", content: "Manage books with SeaORM + GraphQL + Tauri" },
-  ];
+  ]
 }
 
 export default function Books() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [dbStatus, setDbStatus] = useState<string>("Unknown");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [books, setBooks] = useState<Book[]>([])
+  const [dbStatus, setDbStatus] = useState<string>("Unknown")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [newBook, setNewBook] = useState({
     title: "",
     author: "",
     description: "",
     publishedYear: "",
-  });
+  })
 
-  useEffect(() => {
-    loadBooks();
-    checkDbStatus();
-  }, []);
-
-  const checkDbStatus = async () => {
+  const checkDbStatus = useCallback(async () => {
     try {
-      const status = await getDbStatus();
-      setDbStatus(status);
+      const status = await getDbStatus()
+      setDbStatus(status)
     } catch (err) {
-      console.error("Failed to check DB status:", err);
+      console.error("Failed to check DB status:", err)
     }
-  };
+  }, [])
 
-  const loadBooks = async () => {
+  const loadBooks = useCallback(async () => {
     try {
-      setLoading(true);
-      const response = await getBooks();
+      setLoading(true)
+      const response = await getBooks()
       if (response.errors) {
-        setError(response.errors[0]?.message || "Unknown error");
+        setError(response.errors[0]?.message || "Unknown error")
       } else if (response.data) {
-        setBooks(response.data.books || []);
+        setBooks(response.data.books || [])
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load books");
+      setError(err instanceof Error ? err.message : "Failed to load books")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [])
+
+  useEffect(() => {
+    loadBooks()
+    checkDbStatus()
+  }, [checkDbStatus, loadBooks])
 
   const handleCreateBook = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
       const bookData = {
         title: newBook.title,
         author: newBook.author || undefined,
         description: newBook.description || undefined,
-        publishedYear: newBook.publishedYear
-          ? parseInt(newBook.publishedYear)
-          : undefined,
-      };
+        publishedYear: newBook.publishedYear ? parseInt(newBook.publishedYear, 10) : undefined,
+      }
 
-      const response = await createBook(bookData);
+      const response = await createBook(bookData)
       if (response.errors) {
-        setError(response.errors[0]?.message || "Failed to create book");
+        setError(response.errors[0]?.message || "Failed to create book")
       } else {
-        setNewBook({ title: "", author: "", description: "", publishedYear: "" });
-        loadBooks();
+        setNewBook({ title: "", author: "", description: "", publishedYear: "" })
+        loadBooks()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create book");
+      setError(err instanceof Error ? err.message : "Failed to create book")
     }
-  };
+  }
 
   const handleDeleteBook = async (id: number) => {
     try {
-      const response = await deleteBook(id);
+      const response = await deleteBook(id)
       if (response.errors) {
-        setError(response.errors[0]?.message || "Failed to delete book");
+        setError(response.errors[0]?.message || "Failed to delete book")
       } else {
-        loadBooks();
+        loadBooks()
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete book");
+      setError(err instanceof Error ? err.message : "Failed to delete book")
     }
-  };
+  }
 
   return (
     <div className="container mx-auto p-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">LifeBook - GraphQL Demo</h1>
-        <p className="text-muted-foreground">
-          SeaORM + GraphQL + Tauri の統合デモ
-        </p>
+        <p className="text-muted-foreground">SeaORM + GraphQL + Tauri の統合デモ</p>
         <p className="text-sm text-muted-foreground mt-2">
           DB Status: <span className="font-semibold">{dbStatus}</span>
         </p>
@@ -155,9 +151,7 @@ export default function Books() {
               <Textarea
                 id="description"
                 value={newBook.description}
-                onChange={(e) =>
-                  setNewBook({ ...newBook, description: e.target.value })
-                }
+                onChange={(e) => setNewBook({ ...newBook, description: e.target.value })}
                 placeholder="本の説明"
                 rows={3}
               />
@@ -168,9 +162,7 @@ export default function Books() {
                 id="publishedYear"
                 type="number"
                 value={newBook.publishedYear}
-                onChange={(e) =>
-                  setNewBook({ ...newBook, publishedYear: e.target.value })
-                }
+                onChange={(e) => setNewBook({ ...newBook, publishedYear: e.target.value })}
                 placeholder="2024"
               />
             </div>
@@ -190,7 +182,9 @@ export default function Books() {
           {loading ? (
             <p className="text-muted-foreground">読み込み中...</p>
           ) : books.length === 0 ? (
-            <p className="text-muted-foreground">本がまだありません。上のフォームから追加してください。</p>
+            <p className="text-muted-foreground">
+              本がまだありません。上のフォームから追加してください。
+            </p>
           ) : (
             <div className="space-y-4">
               {books.map((book) => (
@@ -202,9 +196,7 @@ export default function Books() {
                         {book.author && (
                           <p className="text-muted-foreground mt-1">著者: {book.author}</p>
                         )}
-                        {book.description && (
-                          <p className="mt-2">{book.description}</p>
-                        )}
+                        {book.description && <p className="mt-2">{book.description}</p>}
                         {book.publishedYear && (
                           <p className="text-muted-foreground text-sm mt-1">
                             出版年: {book.publishedYear}
@@ -228,6 +220,5 @@ export default function Books() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
-
