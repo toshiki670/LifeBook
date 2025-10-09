@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import type { Route } from "./+types/books";
 import { getBooks, createBook, deleteBook, getDbStatus } from "../lib/graphql";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Label } from "~/components/ui/label";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 
 interface Book {
   id: number;
@@ -100,121 +106,127 @@ export default function Books() {
     <div className="container mx-auto p-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">LifeBook - GraphQL Demo</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           SeaORM + GraphQL + Tauri の統合デモ
         </p>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           DB Status: <span className="font-semibold">{dbStatus}</span>
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* 新しい本を追加するフォーム */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-2xl font-semibold mb-4">新しい本を追加</h2>
-        <form onSubmit={handleCreateBook} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              タイトル <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={newBook.title}
-              onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              placeholder="本のタイトル"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">著者</label>
-            <input
-              type="text"
-              value={newBook.author}
-              onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              placeholder="著者名"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">説明</label>
-            <textarea
-              value={newBook.description}
-              onChange={(e) =>
-                setNewBook({ ...newBook, description: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              placeholder="本の説明"
-              rows={3}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">出版年</label>
-            <input
-              type="number"
-              value={newBook.publishedYear}
-              onChange={(e) =>
-                setNewBook({ ...newBook, publishedYear: e.target.value })
-              }
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              placeholder="2024"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            追加
-          </button>
-        </form>
-      </div>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>新しい本を追加</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCreateBook} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">
+                タイトル <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="title"
+                type="text"
+                required
+                value={newBook.title}
+                onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+                placeholder="本のタイトル"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="author">著者</Label>
+              <Input
+                id="author"
+                type="text"
+                value={newBook.author}
+                onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+                placeholder="著者名"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">説明</Label>
+              <Textarea
+                id="description"
+                value={newBook.description}
+                onChange={(e) =>
+                  setNewBook({ ...newBook, description: e.target.value })
+                }
+                placeholder="本の説明"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="publishedYear">出版年</Label>
+              <Input
+                id="publishedYear"
+                type="number"
+                value={newBook.publishedYear}
+                onChange={(e) =>
+                  setNewBook({ ...newBook, publishedYear: e.target.value })
+                }
+                placeholder="2024"
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              追加
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* 本のリスト */}
-      <div className="bg-white shadow-md rounded-lg p-6">
-        <h2 className="text-2xl font-semibold mb-4">本のリスト</h2>
-        {loading ? (
-          <p className="text-gray-500">読み込み中...</p>
-        ) : books.length === 0 ? (
-          <p className="text-gray-500">本がまだありません。上のフォームから追加してください。</p>
-        ) : (
-          <div className="space-y-4">
-            {books.map((book) => (
-              <div
-                key={book.id}
-                className="border rounded-lg p-4 hover:shadow-md transition"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{book.title}</h3>
-                    {book.author && (
-                      <p className="text-gray-600 mt-1">著者: {book.author}</p>
-                    )}
-                    {book.description && (
-                      <p className="text-gray-700 mt-2">{book.description}</p>
-                    )}
-                    {book.publishedYear && (
-                      <p className="text-gray-500 text-sm mt-1">
-                        出版年: {book.publishedYear}
-                      </p>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleDeleteBook(book.id)}
-                    className="ml-4 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
-                  >
-                    削除
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>本のリスト</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-muted-foreground">読み込み中...</p>
+          ) : books.length === 0 ? (
+            <p className="text-muted-foreground">本がまだありません。上のフォームから追加してください。</p>
+          ) : (
+            <div className="space-y-4">
+              {books.map((book) => (
+                <Card key={book.id}>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold">{book.title}</h3>
+                        {book.author && (
+                          <p className="text-muted-foreground mt-1">著者: {book.author}</p>
+                        )}
+                        {book.description && (
+                          <p className="mt-2">{book.description}</p>
+                        )}
+                        {book.publishedYear && (
+                          <p className="text-muted-foreground text-sm mt-1">
+                            出版年: {book.publishedYear}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteBook(book.id)}
+                        className="ml-4"
+                      >
+                        削除
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
