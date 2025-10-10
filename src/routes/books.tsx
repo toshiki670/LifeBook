@@ -5,16 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
+import { type Book, createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
 import type { Route } from "./+types/books"
-
-interface Book {
-  id: number
-  title: string
-  author?: string
-  description?: string
-  publishedYear?: number
-}
 
 export function meta(_: Route.MetaArgs) {
   return [

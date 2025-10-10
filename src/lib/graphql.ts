@@ -9,6 +9,14 @@ export interface GraphQLResponse<T = unknown> {
   }>
 }
 
+export interface Book {
+  id: number
+  title: string
+  author?: string
+  description?: string
+  publishedYear?: number
+}
+
 /**
  * GraphQLクエリを実行
  */
@@ -37,7 +45,7 @@ export async function getBooks() {
       }
     }
   `
-  return executeGraphQL(query)
+  return executeGraphQL<{ books: Book[] }>(query)
 }
 
 /**
@@ -55,7 +63,7 @@ export async function getBook(id: number) {
       }
     }
   `
-  return executeGraphQL(query)
+  return executeGraphQL<{ book: Book }>(query)
 }
 
 /**
@@ -83,7 +91,7 @@ export async function createBook(book: {
       }
     }
   `
-  return executeGraphQL(query)
+  return executeGraphQL<{ createBook: Book }>(query)
 }
 
 /**
@@ -115,7 +123,7 @@ export async function updateBook(
       }
     }
   `
-  return executeGraphQL(query)
+  return executeGraphQL<{ updateBook: Book }>(query)
 }
 
 /**
@@ -127,7 +135,7 @@ export async function deleteBook(id: number) {
       deleteBook(id: ${id})
     }
   `
-  return executeGraphQL(query)
+  return executeGraphQL<{ deleteBook: boolean }>(query)
 }
 
 /**
