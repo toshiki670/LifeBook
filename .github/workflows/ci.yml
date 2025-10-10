@@ -4,21 +4,21 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
-      - 'src/**'
-      - 'src-tauri/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/**'
-      - 'biome.jsonc'
-      - 'tsconfig.json'
+      - "src/**"
+      - "src-tauri/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/**"
+      - "biome.jsonc"
+      - "tsconfig.json"
 
 jobs:
   frontend:
     name: Frontend (Biome & TypeScript)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -58,7 +58,7 @@ jobs:
   rust:
     name: Rust (Tauri Backend)
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -96,4 +96,3 @@ jobs:
       - name: Run cargo fmt check
         working-directory: src-tauri
         run: cargo fmt --check
-
