@@ -1,6 +1,6 @@
-// Application Layer - データ転送オブジェクト
+// Library Application Layer - Book データ転送オブジェクト
 
-use crate::domain::entities::Book;
+use crate::modules::library::domain::entities::book::Book;
 use async_graphql::SimpleObject;
 
 /// Book DTO - GraphQLレスポンス用
@@ -26,3 +26,4 @@ impl From<Book> for BookDto {
         }
     }
 }
+

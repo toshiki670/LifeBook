@@ -1,4 +1,4 @@
-// Domain Layer - エラー型
+// Shared Domain Layer - エラー型
 
 use std::fmt;
 
@@ -20,3 +20,4 @@ impl fmt::Display for DomainError {
 }
 
 impl std::error::Error for DomainError {}
+

@@ -1,13 +1,14 @@
-// Presentation Layer - GraphQL Mutation
+// Presentation Layer - Library Book GraphQL Mutation
 
 use crate::app_state::AppState;
-use crate::application::dto::BookDto;
+use crate::modules::library::application::dto::book::BookDto;
 use async_graphql::*;
 
-pub struct MutationRoot;
+#[derive(Default)]
+pub struct BookMutation;
 
 #[Object]
-impl MutationRoot {
+impl BookMutation {
     /// 新しい本を作成
     async fn create_book(
         &self,
@@ -64,3 +65,4 @@ impl MutationRoot {
         Ok(true)
     }
 }
+

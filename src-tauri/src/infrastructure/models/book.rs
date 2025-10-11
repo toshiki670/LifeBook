@@ -1,4 +1,4 @@
-// Infrastructure Layer - SeaORMモデル（DBスキーマ）
+// Infrastructure Layer - Book SeaORMモデル（DBスキーマ）
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -19,3 +19,4 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+

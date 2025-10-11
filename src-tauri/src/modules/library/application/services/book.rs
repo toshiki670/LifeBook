@@ -1,16 +1,19 @@
-// Application Layer - アプリケーションサービス
+// Library Application Layer - Book アプリケーションサービス
 
-use super::{dto::BookDto, errors::ApplicationError};
-use crate::domain::{entities::Book, repositories::BookRepository};
+use crate::modules::library::{
+    application::dto::book::BookDto,
+    domain::{entities::book::Book, repositories::book::BookRepository},
+};
+use crate::modules::shared::application::errors::ApplicationError;
 use std::sync::Arc;
 
 /// Book管理のユースケースを実装するサービス
-pub struct BookService<R: BookRepository> {
-    repository: Arc<R>,
+pub struct BookService {
+    repository: Arc<dyn BookRepository>,
 }
 
-impl<R: BookRepository> BookService<R> {
-    pub fn new(repository: Arc<R>) -> Self {
+impl BookService {
+    pub fn new(repository: Arc<dyn BookRepository>) -> Self {
         Self { repository }
     }
 
@@ -83,3 +86,4 @@ impl<R: BookRepository> BookService<R> {
         Ok(())
     }
 }
+
