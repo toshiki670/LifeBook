@@ -1,9 +1,8 @@
 // Presentation Layer - GraphQL Query
 
-use crate::application::{dto::BookDto, services::BookService};
-use crate::infrastructure::repositories::BookRepositoryImpl;
+use crate::app_state::AppState;
+use crate::application::dto::BookDto;
 use async_graphql::*;
-use std::sync::Arc;
 
 pub struct QueryRoot;
 
@@ -11,11 +10,12 @@ pub struct QueryRoot;
 impl QueryRoot {
     /// すべての本を取得
     async fn books(&self, ctx: &Context<'_>) -> Result<Vec<BookDto>> {
-        let service = ctx
-            .data::<Arc<BookService<BookRepositoryImpl>>>()
-            .map_err(|_| Error::new("Service not found"))?;
+        let app_state = ctx
+            .data::<AppState>()
+            .map_err(|_| Error::new("AppState not found"))?;
 
-        service
+        app_state
+            .book_service
             .get_all_books()
             .await
             .map_err(|e| Error::new(e.to_string()))
@@ -23,11 +23,12 @@ impl QueryRoot {
 
     /// IDで本を取得
     async fn book(&self, ctx: &Context<'_>, id: i32) -> Result<Option<BookDto>> {
-        let service = ctx
-            .data::<Arc<BookService<BookRepositoryImpl>>>()
-            .map_err(|_| Error::new("Service not found"))?;
+        let app_state = ctx
+            .data::<AppState>()
+            .map_err(|_| Error::new("AppState not found"))?;
 
-        service
+        app_state
+            .book_service
             .get_book(id)
             .await
             .map_err(|e| Error::new(e.to_string()))

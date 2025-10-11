@@ -1,9 +1,8 @@
 // Presentation Layer - GraphQL Mutation
 
-use crate::application::{dto::BookDto, services::BookService};
-use crate::infrastructure::repositories::BookRepositoryImpl;
+use crate::app_state::AppState;
+use crate::application::dto::BookDto;
 use async_graphql::*;
-use std::sync::Arc;
 
 pub struct MutationRoot;
 
@@ -18,11 +17,12 @@ impl MutationRoot {
         description: Option<String>,
         published_year: Option<i32>,
     ) -> Result<BookDto> {
-        let service = ctx
-            .data::<Arc<BookService<BookRepositoryImpl>>>()
-            .map_err(|_| Error::new("Service not found"))?;
+        let app_state = ctx
+            .data::<AppState>()
+            .map_err(|_| Error::new("AppState not found"))?;
 
-        service
+        app_state
+            .book_service
             .create_book(title, author, description, published_year)
             .await
             .map_err(|e| Error::new(e.to_string()))
@@ -38,11 +38,12 @@ impl MutationRoot {
         description: Option<String>,
         published_year: Option<i32>,
     ) -> Result<BookDto> {
-        let service = ctx
-            .data::<Arc<BookService<BookRepositoryImpl>>>()
-            .map_err(|_| Error::new("Service not found"))?;
+        let app_state = ctx
+            .data::<AppState>()
+            .map_err(|_| Error::new("AppState not found"))?;
 
-        service
+        app_state
+            .book_service
             .update_book(id, title, author, description, published_year)
             .await
             .map_err(|e| Error::new(e.to_string()))
@@ -50,11 +51,12 @@ impl MutationRoot {
 
     /// 本を削除
     async fn delete_book(&self, ctx: &Context<'_>, id: i32) -> Result<bool> {
-        let service = ctx
-            .data::<Arc<BookService<BookRepositoryImpl>>>()
-            .map_err(|_| Error::new("Service not found"))?;
+        let app_state = ctx
+            .data::<AppState>()
+            .map_err(|_| Error::new("AppState not found"))?;
 
-        service
+        app_state
+            .book_service
             .delete_book(id)
             .await
             .map_err(|e| Error::new(e.to_string()))?;
