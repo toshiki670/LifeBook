@@ -52,6 +52,7 @@ jobs:
         with:
           toolchain: stable
           components: rustfmt
+          cache-workspaces: src-tauri
       - name: Check format
         uses: actions-rust-lang/rustfmt@v1
         with:
@@ -79,6 +80,7 @@ jobs:
         with:
           toolchain: stable
           components: clippy
+          cache-workspaces: src-tauri
       - name: Check lint
         uses: giraffate/clippy-action@v1
         with:
@@ -108,6 +110,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
+          cache-workspaces: src-tauri
       - name: Run tests
         working-directory: src-tauri
         run: cargo test --workspace --verbose
