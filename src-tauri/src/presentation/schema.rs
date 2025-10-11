@@ -1,16 +1,14 @@
 // Presentation Layer - GraphQL Schema
 
 use super::{mutation::MutationRoot, query::QueryRoot};
-use crate::application::services::BookService;
-use crate::infrastructure::repositories::BookRepositoryImpl;
+use crate::app_state::AppState;
 use async_graphql::*;
-use std::sync::Arc;
 
 pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 /// GraphQLスキーマを構築
-pub fn build_schema(service: Arc<BookService<BookRepositoryImpl>>) -> AppSchema {
+pub fn build_schema(app_state: AppState) -> AppSchema {
     Schema::build(QueryRoot, MutationRoot, EmptySubscription)
-        .data(service)
+        .data(app_state)
         .finish()
 }

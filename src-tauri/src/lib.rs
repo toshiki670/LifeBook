@@ -33,6 +33,7 @@ mod presentation {
 }
 
 // Other modules
+mod app_state;
 mod database;
 mod migration;
 
@@ -40,6 +41,7 @@ mod migration;
 // Imports
 // ============================================================================
 
+use app_state::AppState;
 use application::services::BookService;
 use database::DbState;
 use infrastructure::repositories::BookRepositoryImpl;
@@ -97,10 +99,13 @@ pub fn run() {
         // 4. Application層: サービス構築
         let book_service = Arc::new(BookService::new(book_repository));
 
-        // 5. Presentation層: GraphQLスキーマ構築
-        let schema = build_schema(book_service);
+        // 5. AppState構築（全サービスを集約）
+        let app_state = AppState::new(book_service);
 
-        // 6. データベース状態の管理
+        // 6. Presentation層: GraphQLスキーマ構築
+        let schema = build_schema(app_state);
+
+        // 7. データベース状態の管理
         let db_state: DbState = Arc::new(RwLock::new(Some(db)));
 
         (schema, db_state)
