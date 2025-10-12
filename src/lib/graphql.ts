@@ -22,7 +22,7 @@ export interface Book {
  */
 export async function executeGraphQL<T = unknown>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
 ): Promise<GraphQLResponse<T>> {
   try {
     const request = {
@@ -104,7 +104,7 @@ export async function createBook(book: {
     description: book.description || null,
     publishedYear: book.publishedYear || null,
   }
-  
+
   return executeGraphQL<{ createBook: Book }>(query, variables)
 }
 
@@ -144,7 +144,7 @@ export async function updateBook(
     description: updates.description || null,
     publishedYear: updates.publishedYear || null,
   }
-  
+
   return executeGraphQL<{ updateBook: Book }>(query, variables)
 }
 
@@ -158,7 +158,7 @@ export async function deleteBook(id: number) {
     }
   `
   const variables = { id }
-  
+
   return executeGraphQL<{ deleteBook: boolean }>(query, variables)
 }
 
