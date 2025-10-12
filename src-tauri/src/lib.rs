@@ -64,8 +64,6 @@ fn get_db_status() -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_app_setup() {
         // 基本的なセットアップテスト
