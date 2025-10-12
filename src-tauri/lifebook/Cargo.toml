@@ -38,3 +38,5 @@ anyhow = "1"
 chrono = "0.4"
 migration = { path = "../migration" }
 entity = { path = "../entity" }
+library = { path = "../contexts/library" }
+shared = { path = "../contexts/shared" }

@@ -32,12 +32,28 @@ A desktop application demonstrating the integration of **Tauri**, **SeaORM**, an
 This project showcases how to build a desktop application that:
 
 1. **Full DDD Architecture**: Implements Domain-Driven Design with 4 layers (Domain, Application, Infrastructure, Presentation)
-2. **GraphQL API**: Uses GraphQL as the API layer between frontend and backend
-3. **SeaORM**: Leverages SeaORM for database operations with repository pattern
-4. **Type Safety**: Maintains type safety across the entire stack
-5. **Clean Architecture**: Clear separation of concerns with dependency inversion
+2. **Bounded Contexts as Crates**: Each bounded context is an independent Rust crate with clear boundaries
+3. **GraphQL API**: Uses GraphQL as the API layer between frontend and backend
+4. **SeaORM**: Leverages SeaORM for database operations with repository pattern
+5. **Type Safety**: Maintains type safety across the entire stack
+6. **Clean Architecture**: Clear separation of concerns with dependency inversion
 
-See [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md) and [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) for detailed documentation.
+### 📦 Crate Architecture
+
+The backend is organized into multiple Rust crates:
+
+- **`library`**: Library management bounded context (independent crate)
+  - Contains: Domain, Application, Infrastructure, and Presentation layers
+  - Provides: `BookQuery`, `BookMutation`, `BookService`, `BookRepository`
+- **`shared`**: Common utilities shared across all contexts
+  - Contains: Common error types, domain/application utilities
+- **`entity`**: SeaORM entities (shared DB layer)
+  - Contains: Database models and relations
+- **`migration`**: Database migrations
+- **`lifebook`**: Main Tauri application
+  - Integrates all contexts and provides the Tauri runtime
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md), [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md), and [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) for detailed documentation.
 
 ## 🛠️ Development
 
@@ -69,36 +85,30 @@ pnpm tauri build
 
 ```
 LifeBook/
-├── src/                    # Frontend source
+├── src/                          # Frontend source
 │   ├── lib/
-│   │   └── graphql.ts     # GraphQL client utilities
+│   │   └── graphql.ts           # GraphQL client utilities
 │   ├── routes/
-│   │   ├── home.tsx       # Home page
-│   │   └── books.tsx      # Books management (GraphQL demo)
-│   └── root.tsx           # Root component
-├── src-tauri/             # Rust backend (DDD Architecture)
-│   ├── src/
-│   │   ├── domain/        # Domain Layer
-│   │   │   ├── entities.rs
-│   │   │   ├── repositories.rs
-│   │   │   └── errors.rs
-│   │   ├── application/   # Application Layer
-│   │   │   ├── services.rs
-│   │   │   ├── dto.rs
-│   │   │   └── errors.rs
-│   │   ├── infrastructure/ # Infrastructure Layer
-│   │   │   ├── models.rs
-│   │   │   └── repositories.rs
-│   │   ├── presentation/  # Presentation Layer
-│   │   │   ├── query.rs
-│   │   │   ├── mutation.rs
-│   │   │   └── schema.rs
-│   │   ├── lib.rs         # Entry point & DI
-│   │   ├── database.rs    # Database connection
-│   │   └── migration.rs   # DB migrations
-│   └── Cargo.toml         # Rust dependencies
-├── GRAPHQL_GUIDE.md       # GraphQL integration guide
-└── CODING_GUIDELINES.md   # DDD architecture & coding standards
+│   │   ├── home.tsx             # Home page
+│   │   └── books.tsx            # Books management (GraphQL demo)
+│   └── root.tsx                 # Root component
+├── src-tauri/                   # Rust backend (DDD with Bounded Contexts)
+│   ├── contexts/                # Bounded Contexts (independent Crates)
+│   │   ├── library/             # Library context (Domain, Application, Infrastructure, Presentation)
+│   │   └── shared/              # Shared utilities across contexts
+│   ├── entity/                  # SeaORM entities (shared DB layer)
+│   ├── migration/               # Database migrations
+│   ├── lifebook/                # Main Tauri application
+│   │   └── src/
+│   │       ├── graphql_schema.rs # GraphQL schema integration
+│   │       ├── app_state.rs     # Dependency injection container
+│   │       ├── database.rs      # Database connection
+│   │       ├── lib.rs           # Entry point
+│   │       └── main.rs          # Binary entry
+│   └── Cargo.toml               # Workspace definition
+├── ARCHITECTURE.md              # Architecture documentation
+├── GRAPHQL_GUIDE.md             # GraphQL integration guide
+└── CODING_GUIDELINES.md         # DDD architecture & coding standards
 ```
 
 ## 🎓 Learning Resources

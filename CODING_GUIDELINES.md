@@ -27,42 +27,63 @@
 ### ディレクトリ構造
 
 ```
-src-tauri/src/
-├── modules/                           # ドメインモジュール
-│   ├── library/                       # 図書管理の境界づけられたコンテキスト
-│   │   ├── domain/                    # Domain Layer
-│   │   │   ├── entities/
-│   │   │   │   └── book.rs            # ドメインエンティティ
-│   │   │   └── repositories/
-│   │   │       └── book.rs            # リポジトリtrait
-│   │   ├── application/               # Application Layer
-│   │   │   ├── dto/
-│   │   │   │   └── book.rs            # データ転送オブジェクト
-│   │   │   └── services/
-│   │   │       └── book.rs            # アプリケーションサービス
-│   │   └── infrastructure/            # Infrastructure Layer (実装部分)
-│   │       └── repositories/
-│   │           └── book.rs            # リポジトリ実装
-│   └── shared/                        # 全コンテキスト共通
-│       ├── domain/
-│       │   └── errors.rs              # ドメインエラー
-│       └── application/
-│           └── errors.rs              # アプリケーションエラー
-├── infrastructure/                    # 技術的詳細（コンテキスト外）
-│   └── models/                        # SeaORM Models（全コンテキスト共有）
-│       └── book.rs
-├── presentation/                      # Presentation Layer
-│   ├── schema.rs                      # GraphQLスキーマ構築
-│   └── library/
-│       ├── queries/
-│       │   └── book.rs                # GraphQL Query
-│       └── mutations/
-│           └── book.rs                # GraphQL Mutation
-├── app_state.rs                       # 依存性注入コンテナ
-├── database.rs                        # データベース接続
-├── migration.rs                       # マイグレーション
-├── lib.rs                             # エントリーポイント
-└── main.rs                            # バイナリエントリー
+src-tauri/
+├── contexts/                          # 境界づけられたコンテキスト（独立したCrate）
+│   ├── library/                       # 図書管理コンテキストCrate
+│   │   ├── src/
+│   │   │   ├── domain/                # Domain Layer
+│   │   │   │   ├── entities/
+│   │   │   │   │   └── book.rs        # ドメインエンティティ
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── book.rs        # リポジトリtrait
+│   │   │   │   └── domain.rs
+│   │   │   ├── application/           # Application Layer
+│   │   │   │   ├── dto/
+│   │   │   │   │   └── book.rs        # データ転送オブジェクト
+│   │   │   │   ├── services/
+│   │   │   │   │   └── book.rs        # アプリケーションサービス
+│   │   │   │   └── application.rs
+│   │   │   ├── infrastructure/        # Infrastructure Layer
+│   │   │   │   ├── repositories/
+│   │   │   │   │   └── book.rs        # リポジトリ実装
+│   │   │   │   └── infrastructure.rs
+│   │   │   ├── presentation/          # Presentation Layer
+│   │   │   │   ├── graphql/
+│   │   │   │   │   ├── queries/
+│   │   │   │   │   │   └── book.rs    # GraphQL Query
+│   │   │   │   │   ├── mutations/
+│   │   │   │   │   │   └── book.rs    # GraphQL Mutation
+│   │   │   │   │   └── graphql.rs
+│   │   │   │   └── presentation.rs
+│   │   │   └── lib.rs
+│   │   └── Cargo.toml
+│   └── shared/                        # 共通コンテキストCrate
+│       ├── src/
+│       │   ├── domain/
+│       │   │   ├── errors.rs          # ドメインエラー
+│       │   │   └── domain.rs
+│       │   ├── application/
+│       │   │   ├── errors.rs          # アプリケーションエラー
+│       │   │   └── application.rs
+│       │   └── lib.rs
+│       └── Cargo.toml
+├── entity/                            # SeaORM Entities (共有)
+│   ├── src/
+│   │   ├── book.rs                    # Book Entity
+│   │   └── lib.rs
+│   └── Cargo.toml
+├── lifebook/                          # メインアプリケーション
+│   └── src/
+│       ├── graphql_schema.rs          # GraphQLスキーマ統合
+│       ├── app_state.rs               # DI コンテナ
+│       ├── database.rs
+│       ├── lib.rs
+│       └── main.rs
+└── migration/                         # DBマイグレーション
+    ├── src/
+    │   ├── lib.rs
+    │   └── main.rs
+    └── Cargo.toml
 ```
 
 ### 依存関係ルール

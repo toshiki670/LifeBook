@@ -4,6 +4,8 @@
 
 LifeBookは、クリーンアーキテクチャとドメイン駆動設計（DDD）の原則に基づいて設計された図書管理アプリケーションです。
 
+各境界づけられたコンテキスト（Bounded Context）は独立したRust Crateとして実装され、明確な境界と依存関係を持ちます。
+
 ## 設計原則
 
 ### 1. クリーンアーキテクチャ
@@ -21,10 +23,12 @@ Presentation → Application → Domain ← Infrastructure
 
 ### 2. 境界づけられたコンテキスト（Bounded Context）
 
-関連するドメインモデルを`modules`配下のサブドメインとしてグルーピングします。
+関連するドメインモデルを独立したCrateとして`contexts/`配下に配置します。
 
-- **library**: 図書管理コンテキスト
-- **shared**: 全コンテキスト共通の要素
+- **library**: 図書管理コンテキスト（Crate）
+- **shared**: 全コンテキスト共通の要素（Crate）
+
+各コンテキストは独立してビルド・テスト可能で、明確なAPI境界を持ちます。
 
 ### 3. レイヤー単位の分割
 
@@ -33,50 +37,76 @@ Presentation → Application → Domain ← Infrastructure
 ## ディレクトリ構造
 
 ```
-src-tauri/src/
-├── modules/                          # ドメインモジュール
-│   ├── library/                      # 図書管理の境界づけられたコンテキスト
-│   │   ├── domain/                   # Domain層
-│   │   │   ├── entities/             # エンティティ
-│   │   │   │   └── book.rs           # Book Entity
-│   │   │   └── repositories/         # リポジトリインターフェース
-│   │   │       └── book.rs           # BookRepository trait
-│   │   ├── application/              # Application層
-│   │   │   ├── dto/                  # データ転送オブジェクト
-│   │   │   │   └── book.rs           # BookDto
-│   │   │   └── services/             # アプリケーションサービス
-│   │   │       └── book.rs           # BookService
-│   │   └── infrastructure/           # Infrastructure層
-│   │       └── repositories/         # Repository実装
-│   │           └── book.rs           # BookRepositoryImpl
-│   └── shared/                       # 全コンテキスト共通
-│       ├── domain/
-│       │   └── errors.rs             # 共通ドメインエラー
-│       └── application/
-│           └── errors.rs             # 共通アプリケーションエラー
+src-tauri/
+├── lifebook/                         # メインアプリケーション（Tauri App）
+│   ├── src/
+│   │   ├── graphql_schema.rs         # GraphQLスキーマ統合
+│   │   ├── app_state.rs              # 依存性注入コンテナ
+│   │   ├── database.rs               # データベース接続
+│   │   ├── lib.rs                    # ライブラリエントリーポイント
+│   │   └── main.rs                   # アプリケーションエントリーポイント
+│   └── Cargo.toml                    # メインアプリの依存関係
 │
-├── infrastructure/                   # 技術的詳細（コンテキスト外）
-│   └── models/                       # SeaORM Models（全コンテキスト共有）
-│       └── book.rs                   # Book Model + Relation
+├── contexts/                         # 境界づけられたコンテキスト（Crates）
+│   ├── library/                      # 図書管理コンテキストCrate
+│   │   ├── src/
+│   │   │   ├── domain/               # Domain層
+│   │   │   │   ├── entities/         # エンティティ
+│   │   │   │   │   └── book.rs       # Book Entity
+│   │   │   │   ├── repositories/     # リポジトリインターフェース
+│   │   │   │   │   └── book.rs       # BookRepository trait
+│   │   │   │   └── domain.rs         # Domainモジュール定義
+│   │   │   ├── application/          # Application層
+│   │   │   │   ├── dto/              # データ転送オブジェクト
+│   │   │   │   │   └── book.rs       # BookDto
+│   │   │   │   ├── services/         # アプリケーションサービス
+│   │   │   │   │   └── book.rs       # BookService
+│   │   │   │   └── application.rs    # Applicationモジュール定義
+│   │   │   ├── infrastructure/       # Infrastructure層
+│   │   │   │   ├── repositories/     # Repository実装
+│   │   │   │   │   └── book.rs       # BookRepositoryImpl
+│   │   │   │   └── infrastructure.rs # Infrastructureモジュール定義
+│   │   │   ├── presentation/         # Presentation層（GraphQL）
+│   │   │   │   ├── graphql/          # GraphQL API
+│   │   │   │   │   ├── queries/
+│   │   │   │   │   │   └── book.rs   # Book Query
+│   │   │   │   │   ├── mutations/
+│   │   │   │   │   │   └── book.rs   # Book Mutation
+│   │   │   │   │   └── graphql.rs    # GraphQLモジュール定義
+│   │   │   │   └── presentation.rs   # Presentationモジュール定義
+│   │   │   └── lib.rs                # Libraryのエントリーポイント
+│   │   └── Cargo.toml                # Library crateの依存関係
+│   │
+│   └── shared/                       # 共通コンテキストCrate
+│       ├── src/
+│       │   ├── domain/
+│       │   │   ├── errors.rs         # 共通ドメインエラー
+│       │   │   └── domain.rs         # Domainモジュール定義
+│       │   ├── application/
+│       │   │   ├── errors.rs         # 共通アプリケーションエラー
+│       │   │   └── application.rs    # Applicationモジュール定義
+│       │   └── lib.rs                # Sharedのエントリーポイント
+│       └── Cargo.toml                # Shared crateの依存関係
 │
-├── presentation/                     # Presentation層
-│   ├── schema.rs                     # GraphQLスキーマ統合
-│   └── library/                      # libraryコンテキストのAPI
-│       ├── queries/
-│       │   └── book.rs               # Book Query
-│       └── mutations/
-│           └── book.rs               # Book Mutation
+├── entity/                           # SeaORM Entities（全コンテキスト共有）
+│   ├── src/
+│   │   ├── book.rs                   # Book Model + Relation
+│   │   └── lib.rs
+│   └── Cargo.toml
 │
-├── app_state.rs                      # 依存性注入コンテナ
-├── database.rs                       # データベース接続
-├── migration.rs                      # DBマイグレーション
-├── lib.rs                            # ライブラリエントリーポイント
-└── main.rs                           # アプリケーションエントリーポイント
+├── migration/                        # DBマイグレーション
+│   ├── src/
+│   │   ├── m20250108_000001_create_book_table.rs
+│   │   ├── lib.rs
+│   │   └── main.rs
+│   └── Cargo.toml
+│
+└── Cargo.toml                        # Workspaceの定義
 ```
 
 ## 各レイヤーの責務
 
-### Domain層（`modules/{context}/domain/`）
+### Domain層（`contexts/{context}/src/domain/`）
 
 **責務**: ビジネスロジックとドメインモデル
 
@@ -92,7 +122,7 @@ src-tauri/src/
 **実装例**:
 
 ```rust
-// modules/library/domain/entities/book.rs
+// contexts/library/src/domain/entities/book.rs
 pub struct Book {
     id: Option<i32>,
     title: String,
@@ -110,7 +140,7 @@ impl Book {
 }
 ```
 
-### Application層（`modules/{context}/application/`）
+### Application層（`contexts/{context}/src/application/`）
 
 **責務**: ユースケースの調整
 
@@ -125,7 +155,7 @@ impl Book {
 **実装例**:
 
 ```rust
-// modules/library/application/services/book.rs
+// contexts/library/src/application/services/book.rs
 pub struct BookService {
     repository: Arc<dyn BookRepository>,
 }
@@ -146,7 +176,7 @@ impl BookService {
 
 Infrastructure層は2つの場所に分かれています：
 
-#### 1. コンテキスト内（`modules/{context}/infrastructure/`）
+#### 1. コンテキスト内（`contexts/{context}/src/infrastructure/`）
 
 **責務**: そのコンテキストのRepository実装
 
@@ -154,13 +184,13 @@ Infrastructure層は2つの場所に分かれています：
   - ドメインモデル ↔ DBモデルの変換
   - DB操作
 
-**依存関係**: 自コンテキストのDomain層と、共有`infrastructure/models/`
+**依存関係**: 自コンテキストのDomain層と、共有`entity` crate
 
 **実装例**:
 
 ```rust
-// modules/library/infrastructure/repositories/book.rs
-use crate::infrastructure::models::book;  // 共有Modelを参照
+// contexts/library/src/infrastructure/repositories/book.rs
+use entity::book;  // 共有Entity crateを参照
 
 pub struct BookRepositoryImpl {
     db: DatabaseConnection,
@@ -179,26 +209,26 @@ impl BookRepository for BookRepositoryImpl {
 }
 ```
 
-#### 2. コンテキスト外（`infrastructure/`）
+#### 2. コンテキスト外（`entity/` crate）
 
-**責務**: SeaORM Model（DBスキーマ）の定義
+**責務**: SeaORM Entity（DBスキーマ）の定義
 
-- **models/**: SeaORM Model
+- **entity/**: SeaORM Entity
   - テーブル定義
   - リレーション定義
 
-**なぜModelsはコンテキスト外か**:
+**なぜEntityはコンテキスト外か**:
 
-- SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
+- SeaORMのRelation定義では、同じcrate内の方が参照が容易
 - DBスキーマは技術的詳細で、複数のコンテキストから参照される
 - Repository実装はコンテキスト内にあるため、ドメインの独立性は保たれる
 
 **実装例**:
 
 ```rust
-// infrastructure/models/book.rs
+// entity/src/book.rs
 use sea_orm::entity::prelude::*;
-use super::author;  // 同じディレクトリ内で簡単に参照
+use super::author;  // 同じcrate内で簡単に参照
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
 #[sea_orm(table_name = "books")]
@@ -216,28 +246,54 @@ pub enum Relation {
 }
 ```
 
-### Presentation層（`presentation/`）
+### Presentation層
 
-**責務**: API層（薄いアダプター）
+Presentation層は2つの場所に分かれています：
 
-- **schema.rs**: GraphQLスキーマの統合
-- **{context}/queries/**: GraphQL Query
-- **{context}/mutations/**: GraphQL Mutation
+#### 1. コンテキスト内（`contexts/{context}/src/presentation/graphql/`）
 
-**依存関係**: Application層とDomain層
+**責務**: 各コンテキストのGraphQL API定義
+
+- **queries/**: GraphQL Query
+- **mutations/**: GraphQL Mutation
 
 **実装例**:
 
 ```rust
-// presentation/library/queries/book.rs
+// contexts/library/src/presentation/graphql/queries/book.rs
 #[Object]
 impl BookQuery {
     async fn books(&self, ctx: &Context<'_>) -> Result<Vec<BookDto>> {
-        let app_state = ctx.data::<AppState>()?;
+        let book_service = ctx.data::<Arc<BookService>>()?;
         // Application Serviceに委譲
-        app_state.book_service.get_all_books().await
+        book_service.get_all_books().await
             .map_err(|e| Error::new(e.to_string()))
     }
+}
+```
+
+#### 2. メインアプリ（`lifebook/src/graphql_schema.rs`）
+
+**責務**: GraphQLスキーマの統合のみ
+
+- **graphql_schema.rs**: 各コンテキストから提供されるQuery/Mutationを`MergedObject`で統合
+
+**実装例**:
+
+```rust
+// lifebook/src/graphql_schema.rs
+use library::{BookQuery, BookMutation};
+
+#[derive(MergedObject, Default)]
+pub struct QueryRoot(BookQuery);
+
+#[derive(MergedObject, Default)]
+pub struct MutationRoot(BookMutation);
+
+pub fn build_schema(app_state: AppState) -> AppSchema {
+    Schema::build(QueryRoot::default(), MutationRoot::default(), EmptySubscription)
+        .data(app_state.book_service)
+        .finish()
 }
 ```
 
@@ -248,7 +304,7 @@ impl BookQuery {
 例: `library`コンテキストに`Author`を追加
 
 ```
-modules/library/
+contexts/library/src/
   ├── domain/
   │   ├── entities/
   │   │   ├── book.rs
@@ -263,28 +319,37 @@ modules/library/
   │   └── services/
   │       ├── book.rs
   │       └── author.rs           # 追加
-  └── infrastructure/
-      └── repositories/
+  ├── infrastructure/
+  │   └── repositories/
+  │       ├── book.rs
+  │       └── author.rs           # 追加
+  └── presentation/graphql/
+      ├── queries/
+      │   ├── book.rs
+      │   └── author.rs           # 追加
+      └── mutations/
           ├── book.rs
           └── author.rs           # 追加
 
-infrastructure/models/
+entity/src/
   ├── book.rs
   └── author.rs                   # 追加（コンテキスト外）
 ```
 
 **手順**:
 
-1. `domain/entities/author.rs` でエンティティとビジネスルールを定義
-2. `domain/repositories/author.rs` でリポジトリインターフェースを定義
-3. `application/dto/author.rs` でDTOを定義
-4. `application/services/author.rs` でサービスを実装
-5. `infrastructure/models/author.rs` でSeaORM Modelを定義（コンテキスト外）
-6. `infrastructure/repositories/author.rs` でリポジトリ実装（コンテキスト内）
-7. `presentation/library/queries/author.rs` でクエリを定義
-8. `presentation/library/mutations/author.rs` でミューテーションを定義
-9. 各`mod.rs`にモジュール宣言を追加
-10. `app_state.rs`でサービスを登録
+1. `contexts/library/src/domain/entities/author.rs` でエンティティとビジネスルールを定義
+2. `contexts/library/src/domain/repositories/author.rs` でリポジトリインターフェースを定義
+3. `contexts/library/src/application/dto/author.rs` でDTOを定義
+4. `contexts/library/src/application/services/author.rs` でサービスを実装
+5. `entity/src/author.rs` でSeaORM Entityを定義（コンテキスト外）
+6. `contexts/library/src/infrastructure/repositories/author.rs` でリポジトリ実装（コンテキスト内）
+7. `contexts/library/src/presentation/graphql/queries/author.rs` でクエリを定義
+8. `contexts/library/src/presentation/graphql/mutations/author.rs` でミューテーションを定義
+9. 各モジュールファイル（`entities.rs`, `repositories.rs`, `dto.rs`, `services.rs`等）にモジュール宣言を追加
+10. `contexts/library/src/lib.rs` でエクスポート
+11. `lifebook/src/app_state.rs`でサービスを登録
+12. `lifebook/src/graphql_schema.rs`で`AuthorQuery`と`AuthorMutation`を`MergedObject`に追加
 
 ### 2. 複数エンティティの連携（Coordination）
 
@@ -293,10 +358,13 @@ infrastructure/models/
 **オプションA**: Presentation層で結合（簡単なケース）
 
 ```rust
-// presentation/library/queries/book_with_author.rs
+// contexts/library/src/presentation/graphql/queries/book_with_author.rs
 async fn book_with_author(...) -> Result<BookWithAuthorDto> {
-    let book = app_state.book_service.get_book(id).await?;
-    let author = app_state.author_service.get_author(book.author_id).await?;
+    let book_service = ctx.data::<Arc<BookService>>()?;
+    let author_service = ctx.data::<Arc<AuthorService>>()?;
+
+    let book = book_service.get_book(id).await?;
+    let author = author_service.get_author(book.author_id).await?;
     Ok(BookWithAuthorDto { book, author })
 }
 ```
@@ -304,14 +372,14 @@ async fn book_with_author(...) -> Result<BookWithAuthorDto> {
 **オプションB**: Coordination Serviceを作成（複雑なビジネスロジックがある場合）
 
 ```
-modules/library/application/services/
+contexts/library/src/application/services/
   ├── book.rs
   ├── author.rs
   └── book_with_author.rs       # 調整サービス
 ```
 
 ```rust
-// modules/library/application/services/book_with_author.rs
+// contexts/library/src/application/services/book_with_author.rs
 pub struct BookWithAuthorService {
     book_service: Arc<BookService>,
     author_service: Arc<AuthorService>,
@@ -329,33 +397,55 @@ impl BookWithAuthorService {
 例: ユーザー管理機能を追加
 
 ```
-modules/
-  ├── library/          # 既存
-  ├── user/             # 新規追加
-  │   ├── domain/
-  │   │   ├── entities/
-  │   │   └── repositories/
-  │   ├── application/
-  │   │   ├── dto/
-  │   │   └── services/
-  │   └── infrastructure/
-  │       └── repositories/
-  └── shared/
-
-infrastructure/models/
-  ├── book.rs           # 既存
-  └── user.rs           # 追加（コンテキスト外）
+src-tauri/
+  ├── contexts/
+  │   ├── library/                    # 既存
+  │   ├── user/                       # 新規追加
+  │   │   ├── src/
+  │   │   │   ├── domain/
+  │   │   │   │   ├── entities/
+  │   │   │   │   ├── repositories/
+  │   │   │   │   └── domain.rs
+  │   │   │   ├── application/
+  │   │   │   │   ├── dto/
+  │   │   │   │   ├── services/
+  │   │   │   │   └── application.rs
+  │   │   │   ├── infrastructure/
+  │   │   │   │   ├── repositories/
+  │   │   │   │   └── infrastructure.rs
+  │   │   │   ├── presentation/
+  │   │   │   │   ├── graphql/
+  │   │   │   │   │   ├── queries/
+  │   │   │   │   │   ├── mutations/
+  │   │   │   │   │   └── graphql.rs
+  │   │   │   │   └── presentation.rs
+  │   │   │   └── lib.rs
+  │   │   └── Cargo.toml
+  │   └── shared/                     # 既存
+  │
+  └── entity/src/
+      ├── book.rs                     # 既存
+      └── user.rs                     # 追加（コンテキスト外）
 ```
+
+**手順**:
+
+1. `contexts/user/` ディレクトリを作成
+2. `contexts/user/Cargo.toml` を作成（`shared`と`entity`に依存）
+3. 各レイヤー（domain, application, infrastructure, presentation）を実装
+4. `src-tauri/Cargo.toml` のworkspace membersに`contexts/user`を追加
+5. `lifebook/Cargo.toml` の依存関係に`user = { path = "../contexts/user" }`を追加
+6. `lifebook/src/app_state.rs` でuser contextのサービスを登録
+7. `lifebook/src/graphql_schema.rs` で`UserQuery`と`UserMutation`を`MergedObject`に追加
 
 ## 依存性注入
 
-`app_state.rs`で依存関係を構築します。
+`lifebook/src/app_state.rs`で依存関係を構築します。
 
 ```rust
-use crate::modules::library::{
-    application::services::book::BookService,
-    infrastructure::repositories::book::BookRepositoryImpl,
-};
+use library::{BookRepositoryImpl, BookService};
+use sea_orm::DatabaseConnection;
+use std::sync::Arc;
 
 pub struct AppState {
     pub book_service: Arc<BookService>,
@@ -364,7 +454,7 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(db: DatabaseConnection) -> Self {
-        // 1. Repository実装を作成（コンテキスト内から）
+        // 1. Repository実装を作成（library crateから）
         let book_repo = Arc::new(BookRepositoryImpl::new(db.clone()));
 
         // 2. Serviceを作成（Repositoryを注入）
@@ -374,6 +464,27 @@ impl AppState {
     }
 }
 ```
+
+## Crate間の依存関係
+
+```
+lifebook (メインアプリ)
+  ├─> library (図書管理コンテキスト)
+  │     ├─> shared (共通要素)
+  │     └─> entity (DBエンティティ)
+  ├─> shared
+  ├─> entity
+  └─> migration
+
+migration
+  └─> entity
+```
+
+各コンテキストCrateは：
+
+- **shared** crateに依存（共通エラー型など）
+- **entity** crateに依存（SeaORM Entity）
+- 他のコンテキストには依存しない（疎結合）
 
 ## テスト戦略
 

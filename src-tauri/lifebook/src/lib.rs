@@ -2,12 +2,11 @@
 
 mod app_state;
 mod database;
-mod modules;
-mod presentation;
+mod graphql_schema;
 
 use app_state::AppState;
 use database::setup_database;
-use presentation::schema::build_schema;
+use graphql_schema::build_schema;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -37,7 +36,7 @@ pub fn run() {
 /// GraphQLリクエストを処理するTauriコマンド
 #[tauri::command]
 async fn graphql_request(
-    schema: tauri::State<'_, presentation::schema::AppSchema>,
+    schema: tauri::State<'_, graphql_schema::AppSchema>,
     request: String,
 ) -> Result<String, String> {
     use async_graphql::Request;

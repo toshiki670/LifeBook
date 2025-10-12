@@ -1,9 +1,6 @@
 // Application State - 依存性注入コンテナ
 
-use crate::modules::library::{
-    application::services::book::BookService,
-    infrastructure::repositories::book::BookRepositoryImpl,
-};
+use library::{BookRepositoryImpl, BookService};
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 
