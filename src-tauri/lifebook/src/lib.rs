@@ -2,7 +2,6 @@
 
 mod app_state;
 mod database;
-mod infrastructure;
 mod modules;
 mod presentation;
 
