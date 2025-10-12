@@ -324,6 +324,7 @@ src/
 ```
 
 **entities.rs（モジュール宣言ファイル）**:
+
 ```rust
 // modules/library/domain/entities.rs
 pub mod book;
@@ -332,6 +333,7 @@ pub mod book;
 ```
 
 **book.rs（実装ファイル）**:
+
 ```rust
 // modules/library/domain/entities/book.rs
 use crate::modules::shared::domain::errors::DomainError;
