@@ -20,9 +20,16 @@ export interface Book {
 /**
  * GraphQLクエリを実行
  */
-export async function executeGraphQL<T = unknown>(query: string): Promise<GraphQLResponse<T>> {
+export async function executeGraphQL<T = unknown>(
+  query: string,
+  variables?: Record<string, unknown>
+): Promise<GraphQLResponse<T>> {
   try {
-    const result = await invoke<string>("execute_graphql", { query })
+    const request = {
+      query,
+      ...(variables && { variables }),
+    }
+    const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
     return JSON.parse(result)
   } catch (error) {
     console.error("GraphQL execution error:", error)
@@ -98,13 +105,7 @@ export async function createBook(book: {
     publishedYear: book.publishedYear || null,
   }
   
-  const request = {
-    query,
-    variables,
-  }
-  
-  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
-  return JSON.parse(result) as GraphQLResponse<{ createBook: Book }>
+  return executeGraphQL<{ createBook: Book }>(query, variables)
 }
 
 /**
@@ -144,13 +145,7 @@ export async function updateBook(
     publishedYear: updates.publishedYear || null,
   }
   
-  const request = {
-    query,
-    variables,
-  }
-  
-  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
-  return JSON.parse(result) as GraphQLResponse<{ updateBook: Book }>
+  return executeGraphQL<{ updateBook: Book }>(query, variables)
 }
 
 /**
@@ -164,13 +159,7 @@ export async function deleteBook(id: number) {
   `
   const variables = { id }
   
-  const request = {
-    query,
-    variables,
-  }
-  
-  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
-  return JSON.parse(result) as GraphQLResponse<{ deleteBook: boolean }>
+  return executeGraphQL<{ deleteBook: boolean }>(query, variables)
 }
 
 /**
