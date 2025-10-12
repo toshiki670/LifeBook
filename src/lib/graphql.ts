@@ -76,12 +76,12 @@ export async function createBook(book: {
   publishedYear?: number
 }) {
   const query = `
-    mutation {
+    mutation CreateBook($title: String!, $author: String, $description: String, $publishedYear: Int) {
       createBook(
-        title: "${book.title}"
-        ${book.author ? `author: "${book.author}"` : ""}
-        ${book.description ? `description: "${book.description}"` : ""}
-        ${book.publishedYear ? `publishedYear: ${book.publishedYear}` : ""}
+        title: $title
+        author: $author
+        description: $description
+        publishedYear: $publishedYear
       ) {
         id
         title
@@ -91,7 +91,20 @@ export async function createBook(book: {
       }
     }
   `
-  return executeGraphQL<{ createBook: Book }>(query)
+  const variables = {
+    title: book.title,
+    author: book.author || null,
+    description: book.description || null,
+    publishedYear: book.publishedYear || null,
+  }
+  
+  const request = {
+    query,
+    variables,
+  }
+  
+  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
+  return JSON.parse(result) as GraphQLResponse<{ createBook: Book }>
 }
 
 /**
@@ -106,15 +119,15 @@ export async function updateBook(
     publishedYear?: number
   },
 ) {
-  const fields = []
-  if (updates.title) fields.push(`title: "${updates.title}"`)
-  if (updates.author) fields.push(`author: "${updates.author}"`)
-  if (updates.description) fields.push(`description: "${updates.description}"`)
-  if (updates.publishedYear) fields.push(`publishedYear: ${updates.publishedYear}`)
-
   const query = `
-    mutation {
-      updateBook(id: ${id}, ${fields.join(", ")}) {
+    mutation UpdateBook($id: Int!, $title: String, $author: String, $description: String, $publishedYear: Int) {
+      updateBook(
+        id: $id
+        title: $title
+        author: $author
+        description: $description
+        publishedYear: $publishedYear
+      ) {
         id
         title
         author
@@ -123,7 +136,21 @@ export async function updateBook(
       }
     }
   `
-  return executeGraphQL<{ updateBook: Book }>(query)
+  const variables = {
+    id,
+    title: updates.title || null,
+    author: updates.author || null,
+    description: updates.description || null,
+    publishedYear: updates.publishedYear || null,
+  }
+  
+  const request = {
+    query,
+    variables,
+  }
+  
+  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
+  return JSON.parse(result) as GraphQLResponse<{ updateBook: Book }>
 }
 
 /**
@@ -131,11 +158,19 @@ export async function updateBook(
  */
 export async function deleteBook(id: number) {
   const query = `
-    mutation {
-      deleteBook(id: ${id})
+    mutation DeleteBook($id: Int!) {
+      deleteBook(id: $id)
     }
   `
-  return executeGraphQL<{ deleteBook: boolean }>(query)
+  const variables = { id }
+  
+  const request = {
+    query,
+    variables,
+  }
+  
+  const result = await invoke<string>("graphql_request", { request: JSON.stringify(request) })
+  return JSON.parse(result) as GraphQLResponse<{ deleteBook: boolean }>
 }
 
 /**
