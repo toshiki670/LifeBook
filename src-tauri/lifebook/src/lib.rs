@@ -3,7 +3,6 @@
 mod app_state;
 mod database;
 mod infrastructure;
-mod migration;
 mod modules;
 mod presentation;
 
