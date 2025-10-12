@@ -1,6 +1,6 @@
-// Domain Layer - エンティティ
+// Library Domain Layer - Book エンティティ
 
-use super::errors::DomainError;
+use crate::modules::shared::domain::errors::DomainError;
 use chrono::Datelike;
 
 /// Book エンティティ（ビジネスルールを持つドメインモデル）

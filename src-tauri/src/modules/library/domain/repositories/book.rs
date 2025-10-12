@@ -1,6 +1,7 @@
-// Domain Layer - リポジトリインターフェース
+// Library Domain Layer - Book リポジトリインターフェース
 
-use super::{entities::Book, errors::DomainError};
+use crate::modules::library::domain::entities::book::Book;
+use crate::modules::shared::domain::errors::DomainError;
 use async_trait::async_trait;
 
 /// Book リポジトリのインターフェース

@@ -28,25 +28,41 @@
 
 ```
 src-tauri/src/
-├── domain/                 # Domain Layer
-│   ├── entities.rs         # ドメインエンティティ
-│   ├── repositories.rs     # リポジトリtrait
-│   └── errors.rs           # ドメインエラー
-├── application/            # Application Layer
-│   ├── services.rs         # アプリケーションサービス
-│   ├── dto.rs              # データ転送オブジェクト
-│   └── errors.rs           # アプリケーションエラー
-├── infrastructure/         # Infrastructure Layer
-│   ├── repositories.rs     # リポジトリ実装
-│   └── models.rs           # SeaORMモデル
-├── presentation/           # Presentation Layer
-│   ├── query.rs            # GraphQL Query
-│   ├── mutation.rs         # GraphQL Mutation
-│   └── schema.rs           # GraphQLスキーマ構築
-├── lib.rs                  # エントリーポイント & DI
-├── database.rs             # データベース接続
-├── migration.rs            # マイグレーション
-└── main.rs                 # バイナリエントリー
+├── modules/                           # ドメインモジュール
+│   ├── library/                       # 図書管理の境界づけられたコンテキスト
+│   │   ├── domain/                    # Domain Layer
+│   │   │   ├── entities/
+│   │   │   │   └── book.rs            # ドメインエンティティ
+│   │   │   └── repositories/
+│   │   │       └── book.rs            # リポジトリtrait
+│   │   ├── application/               # Application Layer
+│   │   │   ├── dto/
+│   │   │   │   └── book.rs            # データ転送オブジェクト
+│   │   │   └── services/
+│   │   │       └── book.rs            # アプリケーションサービス
+│   │   └── infrastructure/            # Infrastructure Layer (実装部分)
+│   │       └── repositories/
+│   │           └── book.rs            # リポジトリ実装
+│   └── shared/                        # 全コンテキスト共通
+│       ├── domain/
+│       │   └── errors.rs              # ドメインエラー
+│       └── application/
+│           └── errors.rs              # アプリケーションエラー
+├── infrastructure/                    # 技術的詳細（コンテキスト外）
+│   └── models/                        # SeaORM Models（全コンテキスト共有）
+│       └── book.rs
+├── presentation/                      # Presentation Layer
+│   ├── schema.rs                      # GraphQLスキーマ構築
+│   └── library/
+│       ├── queries/
+│       │   └── book.rs                # GraphQL Query
+│       └── mutations/
+│           └── book.rs                # GraphQL Mutation
+├── app_state.rs                       # 依存性注入コンテナ
+├── database.rs                        # データベース接続
+├── migration.rs                       # マイグレーション
+├── lib.rs                             # エントリーポイント
+└── main.rs                            # バイナリエントリー
 ```
 
 ### 依存関係ルール
@@ -57,15 +73,16 @@ src-tauri/src/
 
 ### 各レイヤーの責務
 
-#### 1. Domain Layer (`domain/`)
+#### 1. Domain Layer (`modules/{context}/domain/`)
 
 **役割**: ビジネスロジックの中核
 
 **ファイル構成**:
 
-- `entities.rs` - ビジネスルールを持つドメインモデル
-- `repositories.rs` - データ永続化のインターフェース定義
-- `errors.rs` - ビジネスルール違反を表すエラー
+- `entities/book.rs` - ビジネスルールを持つドメインモデル
+- `repositories/book.rs` - データ永続化のインターフェース定義
+
+**共通エラー**: `modules/shared/domain/errors.rs`
 
 **ルール**:
 
@@ -76,7 +93,9 @@ src-tauri/src/
 **例**:
 
 ```rust
-// domain/entities.rs
+// modules/library/domain/entities/book.rs
+use crate::modules::shared::domain::errors::DomainError;
+
 pub struct Book {
     id: Option<i32>,
     title: String,
@@ -94,15 +113,16 @@ impl Book {
 }
 ```
 
-#### 2. Application Layer (`application/`)
+#### 2. Application Layer (`modules/{context}/application/`)
 
 **役割**: ユースケースの実装
 
 **ファイル構成**:
 
-- `services.rs` - ドメインを組み合わせてアプリケーション機能を提供
-- `dto.rs` - プレゼンテーション層とのデータ転送オブジェクト
-- `errors.rs` - アプリケーションエラー
+- `services/book.rs` - ドメインを組み合わせてアプリケーション機能を提供
+- `dto/book.rs` - プレゼンテーション層とのデータ転送オブジェクト
+
+**共通エラー**: `modules/shared/application/errors.rs`
 
 **ルール**:
 
@@ -113,12 +133,18 @@ impl Book {
 **例**:
 
 ```rust
-// application/services.rs
-pub struct BookService<R: BookRepository> {
-    repository: Arc<R>,
+// modules/library/application/services/book.rs
+use crate::modules::library::domain::{
+    entities::book::Book,
+    repositories::book::BookRepository,
+};
+use crate::modules::shared::application::errors::ApplicationError;
+
+pub struct BookService {
+    repository: Arc<dyn BookRepository>,
 }
 
-impl<R: BookRepository> BookService<R> {
+impl BookService {
     pub async fn create_book(...) -> Result<BookDto, ApplicationError> {
         let book = Book::new(...)?;  // ドメイン層
         let saved = self.repository.save(book).await?;
@@ -127,24 +153,33 @@ impl<R: BookRepository> BookService<R> {
 }
 ```
 
-#### 3. Infrastructure Layer (`infrastructure/`)
+#### 3. Infrastructure Layer
 
-**役割**: 技術的詳細の実装
+Infrastructure層は2つの場所に分かれています：
+
+**A. コンテキスト内** (`modules/{context}/infrastructure/`)
+
+**役割**: そのコンテキストのRepository実装
 
 **ファイル構成**:
 
-- `models.rs` - SeaORMモデル（データベーススキーマ）
-- `repositories.rs` - Domain層のリポジトリtraitを実装
+- `repositories/book.rs` - Domain層のリポジトリtraitを実装
 
 **ルール**:
 
-- SeaORMなどの技術的詳細はこの層のみ
 - ドメインモデル ↔ DBモデルの変換を担当
+- 自コンテキストのDomain層と共有`infrastructure/models/`に依存
 
 **例**:
 
 ```rust
-// infrastructure/repositories.rs
+// modules/library/infrastructure/repositories/book.rs
+use crate::infrastructure::models::book;  // 共有Modelを参照
+use crate::modules::library::domain::{
+    entities::book::Book,
+    repositories::book::BookRepository,
+};
+
 pub struct BookRepositoryImpl {
     db: DatabaseConnection,
 }
@@ -161,15 +196,25 @@ impl BookRepository for BookRepositoryImpl {
 }
 ```
 
+**B. コンテキスト外** (`infrastructure/`)
+
+**役割**: SeaORM Models（DBスキーマ）
+
+**ファイル構成**:
+
+- `models/book.rs` - SeaORMモデル（全コンテキスト共有）
+
+**理由**: SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
+
 #### 4. Presentation Layer (`presentation/`)
 
 **役割**: クライアントとの通信
 
 **ファイル構成**:
 
-- `query.rs` - GraphQL Query（読み取り操作）
-- `mutation.rs` - GraphQL Mutation（書き込み操作）
 - `schema.rs` - GraphQLスキーマ構築
+- `library/queries/book.rs` - GraphQL Query（読み取り操作）
+- `library/mutations/book.rs` - GraphQL Mutation（書き込み操作）
 
 **ルール**:
 
@@ -180,12 +225,16 @@ impl BookRepository for BookRepositoryImpl {
 **例**:
 
 ```rust
-// presentation/mutation.rs
+// presentation/library/mutations/book.rs
+use crate::app_state::AppState;
+use crate::modules::library::application::dto::book::BookDto;
+
 #[Object]
-impl MutationRoot {
+impl BookMutation {
     async fn create_book(&self, ctx: &Context<'_>, title: String, ...) -> Result<BookDto> {
-        let service = ctx.data::<Arc<BookService<...>>>()?;
-        service.create_book(title, ...)
+        let app_state = ctx.data::<AppState>()?;
+        app_state.book_service
+            .create_book(title, ...)
             .await
             .map_err(|e| Error::new(e.to_string()))
     }
@@ -201,87 +250,108 @@ impl MutationRoot {
 
 ### 新機能の追加手順
 
+例: `library`コンテキストに新しいエンティティ（Author）を追加する場合
+
 1. **Domain層**:
-   - `domain/entities.rs` にエンティティを追加
-   - `domain/repositories.rs` にリポジトリtraitを追加
+   - `modules/library/domain/entities/author.rs` にエンティティを追加
+   - `modules/library/domain/repositories/author.rs` にリポジトリtraitを追加
 2. **Infrastructure層**:
-   - `infrastructure/models.rs` にSeaORMモデルを追加
-   - `infrastructure/repositories.rs` にリポジトリ実装を追加
+   - `infrastructure/models/author.rs` にSeaORMモデルを追加（コンテキスト外）
+   - `modules/library/infrastructure/repositories/author.rs` にリポジトリ実装を追加（コンテキスト内）
 3. **Application層**:
-   - `application/services.rs` にサービスを追加
-   - `application/dto.rs` にDTOを追加
+   - `modules/library/application/services/author.rs` にサービスを追加
+   - `modules/library/application/dto/author.rs` にDTOを追加
 4. **Presentation層**:
-   - `presentation/query.rs` または `presentation/mutation.rs` にリゾルバーを追加
+   - `presentation/library/queries/author.rs` にクエリを追加
+   - `presentation/library/mutations/author.rs` にミューテーションを追加
+5. **依存性注入**:
+   - `app_state.rs` でサービスを登録
+
+詳細は `ARCHITECTURE.md` を参照してください。
 
 ## 📁 モジュール構造の方針
 
-### ⚠️ 重要: `mod.rs` を使用しない
+### ⚠️ 重要: `{folder}.rs` パターンを使用する
 
-このプロジェクトでは、**`mod.rs` ファイルを作成しない**方針を採用しています。
+このプロジェクトでは、**`mod.rs` ではなく `{folder}.rs` パターン**を採用しています。
 
-#### ❌ 避けるべき構造
+#### ❌ 避けるべき構造（古い方式）
 
 ```
 src/
 ├── entities/
-│   ├── mod.rs          # ❌ 使わない
+│   ├── mod.rs          # ❌ エディタで複数のmod.rsが開いて混乱する
 │   ├── book.rs
 │   └── user.rs
 └── migration/
-    ├── mod.rs          # ❌ 使わない
+    ├── mod.rs          # ❌ どのmod.rsか分かりにくい
     └── m20250108_create_table.rs
 ```
 
-#### ✅ 推奨する構造
+#### ✅ 推奨する構造（新しい方式）
 
 ```
 src/
-├── entities.rs         # ✅ 単一ファイルにまとめる
-└── migration.rs        # ✅ 単一ファイルにまとめる
+├── entities/
+│   ├── book.rs
+│   └── user.rs
+├── entities.rs         # ✅ モジュール宣言（mod.rsの代わり）
+└── migration.rs        # ✅ 単一ファイルの場合はそのまま
 ```
 
 ### 理由
 
-1. **シンプルさ**: ファイル数が少なくなり、プロジェクト構造が把握しやすい
-2. **保守性**: モジュール宣言が散らばらず、一箇所で管理できる
-3. **明確さ**: ディレクトリとモジュールの対応関係が明確になる
+1. **エディタの使いやすさ**: 複数の`mod.rs`タブが開かれて混乱することがない
+2. **明確さ**: ファイル名でモジュールが明確になる（`entities.rs`は`entities/`モジュール）
+3. **新しい推奨方式**: Rust 2018エディション以降で推奨されるパターン
+4. **保守性**: モジュール宣言がファイル名で判別できる
 
 ### 実装例
 
-#### ✅ 正しい実装: `entities.rs`
+#### ✅ 正しい実装例 1: 複数ファイルに分割する場合
+
+```
+src/
+├── modules/
+│   ├── library/
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   └── book.rs        # Bookエンティティの実装
+│   │   │   └── entities.rs        # モジュール宣言（mod.rsの代わり）
+│   │   └── domain.rs               # モジュール宣言
+│   └── library.rs                  # モジュール宣言
+└── modules.rs                      # モジュール宣言
+```
+
+**entities.rs（モジュール宣言ファイル）**:
 
 ```rust
-// Book Entity
-use async_graphql::*;
-use sea_orm::entity::prelude::*;
-use serde::{Deserialize, Serialize};
+// modules/library/domain/entities.rs
+pub mod book;
+// 将来authorを追加する場合
+// pub mod author;
+```
 
-pub mod book {
-    use super::*;
+**book.rs（実装ファイル）**:
 
-    #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, SimpleObject)]
-    #[sea_orm(table_name = "books")]
-    pub struct Model {
-        #[sea_orm(primary_key)]
-        pub id: i32,
-        pub title: String,
-        // ...
-    }
+```rust
+// modules/library/domain/entities/book.rs
+use crate::modules::shared::domain::errors::DomainError;
 
-    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-    pub enum Relation {}
-
-    impl ActiveModelBehavior for ActiveModel {}
+pub struct Book {
+    id: Option<i32>,
+    title: String,
+    // ...
 }
 
-// 今後、他のエンティティを追加する場合もこのファイルに追記
-pub mod user {
-    use super::*;
-    // User エンティティの実装
+impl Book {
+    pub fn new(title: String, ...) -> Result<Self, DomainError> {
+        // 実装
+    }
 }
 ```
 
-#### ✅ 正しい実装: `migration.rs`
+#### ✅ 正しい実装例 2: 単一ファイルの場合（migration.rs）
 
 ```rust
 use sea_orm_migration::prelude::*;
@@ -430,13 +500,13 @@ mod migration;    // migration.rs を参照
 
 ## 🚫 避けるべきパターン
 
-### 1. ディレクトリを作って `mod.rs` を配置する
+### 1. `mod.rs` パターン（古い方式）
 
 ```rust
 // ❌ 避ける
 src/
 └── entities/
-    ├── mod.rs
+    ├── mod.rs      # エディタで複数のmod.rsが開いて混乱
     └── book.rs
 ```
 
@@ -446,36 +516,38 @@ src/
 
 ## ✅ 推奨パターン
 
-### 1. 単一ファイルでモジュール管理
+### 1. `{folder}.rs` パターン（新しい方式）
 
 ```rust
 // ✅ 推奨
 src/
-└── entities.rs    # 内部でpub modを使って複数エンティティを定義
+├── entities/
+│   └── book.rs
+└── entities.rs    # モジュール宣言（mod.rsの代わり）
 ```
 
-### 2. 必要に応じてサブモジュール化
+### 2. 単一ファイルでまとめる（小規模な場合）
 
-ファイルが500行を超えるなど、明確に分割が必要な場合のみ、ディレクトリ構造を検討する。
-その場合でも `mod.rs` は使わず、明示的なファイル名を使う。
+ファイルが500行以下で、関連コードが少ない場合は単一ファイルにまとめる。
 
 ```rust
-// 大規模になった場合の例（現時点では不要）
+// ✅ 小規模なら単一ファイルでOK
 src/
-└── graphql/
-    ├── query.rs      # QueryRootの実装
-    ├── mutation.rs   # MutationRootの実装
-    └── types.rs      # 共通型定義
+└── migration.rs   # すべてのマイグレーションを含む
 ```
 
-そして `lib.rs` で：
+### 3. ディレクトリ構造の例
 
-```rust
-mod graphql {
-    pub mod query;
-    pub mod mutation;
-    pub mod types;
-}
+```
+src/
+├── modules/
+│   ├── library/
+│   │   └── domain/
+│   │       ├── entities/
+│   │       │   └── book.rs
+│   │       └── entities.rs  # モジュール宣言
+│   └── library.rs            # モジュール宣言
+└── modules.rs                # モジュール宣言
 ```
 
 ## ⚠️ トラブルシューティング

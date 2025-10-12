@@ -1,4 +1,4 @@
-// Domain Layer - エラー型
+// Shared Domain Layer - エラー型
 
 use std::fmt;
 

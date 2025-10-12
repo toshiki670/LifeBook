@@ -1,20 +1,25 @@
 // Application State - 依存性注入コンテナ
 
-use crate::application::services::BookService;
-use crate::infrastructure::repositories::BookRepositoryImpl;
+use crate::modules::library::{
+    application::services::book::BookService,
+    infrastructure::repositories::book::BookRepositoryImpl,
+};
+use sea_orm::DatabaseConnection;
 use std::sync::Arc;
 
-/// アプリケーション全体の状態と依存性を管理
-#[derive(Clone)]
+/// アプリケーション全体の状態を保持する構造体
 pub struct AppState {
-    pub book_service: Arc<BookService<BookRepositoryImpl>>,
-    // 将来のサービスをここに追加
-    // 例: pub author_service: Arc<AuthorService<AuthorRepositoryImpl>>,
-    // 例: pub category_service: Arc<CategoryService<CategoryRepositoryImpl>>,
+    pub book_service: Arc<BookService>,
 }
 
 impl AppState {
-    pub fn new(book_service: Arc<BookService<BookRepositoryImpl>>) -> Self {
+    pub fn new(db: DatabaseConnection) -> Self {
+        // Repositories
+        let book_repo = Arc::new(BookRepositoryImpl::new(db));
+
+        // Services
+        let book_service = Arc::new(BookService::new(book_repo));
+
         Self { book_service }
     }
 }

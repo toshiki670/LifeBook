@@ -6,9 +6,9 @@ description = "Fix the code"
 category = "Development"
 cwd = "src-tauri"
 script = ['''
-cargo fix --allow-dirty --allow-staged
+cargo fix --allow-dirty --allow-staged --all-targets
 cargo fmt
-cargo clippy --fix --allow-dirty --allow-staged
+cargo clippy --fix --allow-dirty --allow-staged --all-targets
 ''']
 
 [tasks.fix-with-ai]

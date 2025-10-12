@@ -1,13 +1,14 @@
-// Presentation Layer - GraphQL Query
+// Presentation Layer - Library Book GraphQL Query
 
 use crate::app_state::AppState;
-use crate::application::dto::BookDto;
+use crate::modules::library::application::dto::book::BookDto;
 use async_graphql::*;
 
-pub struct QueryRoot;
+#[derive(Default)]
+pub struct BookQuery;
 
 #[Object]
-impl QueryRoot {
+impl BookQuery {
     /// すべての本を取得
     async fn books(&self, ctx: &Context<'_>) -> Result<Vec<BookDto>> {
         let app_state = ctx

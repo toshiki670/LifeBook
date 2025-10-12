@@ -1,7 +1,8 @@
-// Infrastructure Layer - リポジトリ実装
+// Library Infrastructure Layer - Book リポジトリ実装
 
-use super::models;
-use crate::domain::{entities::Book, errors::DomainError, repositories::BookRepository};
+use crate::infrastructure::models::book;
+use crate::modules::library::domain::{entities::book::Book, repositories::book::BookRepository};
+use crate::modules::shared::domain::errors::DomainError;
 use async_trait::async_trait;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, NotSet, Set, entity::prelude::*};
 
@@ -16,10 +17,10 @@ impl BookRepositoryImpl {
     }
 
     /// ドメインモデルをDBモデルに変換
-    fn domain_to_active_model(book: &Book) -> models::ActiveModel {
+    fn domain_to_active_model(book: &Book) -> book::ActiveModel {
         if let Some(id) = book.id() {
             // 既存の本（更新）
-            models::ActiveModel {
+            book::ActiveModel {
                 id: Set(id),
                 title: Set(book.title().to_string()),
                 author: Set(book.author().map(String::from)),
@@ -28,7 +29,7 @@ impl BookRepositoryImpl {
             }
         } else {
             // 新しい本（作成）
-            models::ActiveModel {
+            book::ActiveModel {
                 id: NotSet,
                 title: Set(book.title().to_string()),
                 author: Set(book.author().map(String::from)),
@@ -39,7 +40,7 @@ impl BookRepositoryImpl {
     }
 
     /// DBモデルをドメインモデルに変換
-    fn db_to_domain(model: models::Model) -> Book {
+    fn db_to_domain(model: book::Model) -> Book {
         Book::reconstruct(
             model.id,
             model.title,
@@ -53,7 +54,7 @@ impl BookRepositoryImpl {
 #[async_trait]
 impl BookRepository for BookRepositoryImpl {
     async fn find_by_id(&self, id: i32) -> Result<Option<Book>, DomainError> {
-        let book = models::Entity::find_by_id(id)
+        let book = book::Entity::find_by_id(id)
             .one(&self.db)
             .await
             .map_err(|e| DomainError::InvalidState(format!("Database error: {}", e)))?;
@@ -62,7 +63,7 @@ impl BookRepository for BookRepositoryImpl {
     }
 
     async fn find_all(&self) -> Result<Vec<Book>, DomainError> {
-        let books = models::Entity::find()
+        let books = book::Entity::find()
             .all(&self.db)
             .await
             .map_err(|e| DomainError::InvalidState(format!("Database error: {}", e)))?;
@@ -94,13 +95,13 @@ impl BookRepository for BookRepositoryImpl {
     }
 
     async fn delete(&self, id: i32) -> Result<(), DomainError> {
-        let book = models::Entity::find_by_id(id)
+        let book = book::Entity::find_by_id(id)
             .one(&self.db)
             .await
             .map_err(|e| DomainError::InvalidState(format!("Database error: {}", e)))?
             .ok_or_else(|| DomainError::NotFound(format!("Book with id {} not found", id)))?;
 
-        let active_model: models::ActiveModel = book.into();
+        let active_model: book::ActiveModel = book.into();
         active_model
             .delete(&self.db)
             .await

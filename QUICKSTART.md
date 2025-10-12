@@ -48,7 +48,9 @@ console.log(result);
 
 ## 📚 次のステップ
 
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - モジュラーアーキテクチャの詳細な設計ドキュメント
 - [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md) - GraphQL統合の詳細な説明
+- [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) - コーディング規約とベストプラクティス
 - [README.md](./README.md) - プロジェクト概要
 
 ## 🔄 マイグレーションについて
@@ -59,14 +61,25 @@ console.log(result);
 - アプリケーション起動時に自動実行されます
 - データベーススキーマはマイグレーションで管理されています
 
-**注**: このプロジェクトでは`mod.rs`を使わない方針を採用しています。詳細は[CODING_GUIDELINES.md](./CODING_GUIDELINES.md)を参照してください。
-
 新しいマイグレーションを追加する場合：
 
 1. `src-tauri/src/migration.rs`を開く
 2. ファイル末尾に新しいマイグレーションモジュールを追加
 3. `Migrator::migrations()`に新しいマイグレーションを登録
 4. アプリを再起動すると自動的に適用されます
+
+## 🏗️ アーキテクチャについて
+
+このプロジェクトは**モジュラーアーキテクチャ**と**境界づけられたコンテキスト（DDD）**を採用しています：
+
+- `modules/library/` - 図書管理の境界づけられたコンテキスト
+  - `domain/` - ビジネスロジックとエンティティ
+  - `application/` - ユースケースの実装
+  - `infrastructure/` - リポジトリ実装
+- `infrastructure/models/` - SeaORM Models（全コンテキスト共有）
+- `presentation/library/` - GraphQL API
+
+詳細は[ARCHITECTURE.md](./ARCHITECTURE.md)を参照してください。
 
 ## ❗ トラブルシューティング
 

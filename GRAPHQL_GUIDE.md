@@ -15,17 +15,27 @@
 
 ```
 src-tauri/src/
-├── lib.rs              # メインエントリーポイント、Tauriコマンド定義
-├── database.rs         # データベース接続管理
-├── migration.rs        # DBマイグレーション (全マイグレーションを含む)
-├── entities.rs         # SeaORMエンティティ (全エンティティを含む)
-└── graphql/            # GraphQL実装
-    ├── mod.rs
-    ├── schema.rs       # GraphQLスキーマ構築
-    └── resolvers.rs    # Query/Mutationリゾルバー
+├── modules/                        # ドメインモジュール
+│   ├── library/                    # 図書管理コンテキスト
+│   │   ├── domain/                 # エンティティ、リポジトリtrait
+│   │   ├── application/            # DTO、サービス
+│   │   └── infrastructure/         # リポジトリ実装
+│   └── shared/                     # 共通エラー
+├── infrastructure/                 # 技術的詳細
+│   └── models/                     # SeaORM Models
+├── presentation/                   # GraphQL実装
+│   ├── schema.rs                   # GraphQLスキーマ構築
+│   └── library/
+│       ├── queries/                # GraphQL Queries
+│       └── mutations/              # GraphQL Mutations
+├── app_state.rs                    # 依存性注入コンテナ
+├── database.rs                     # データベース接続管理
+├── migration.rs                    # DBマイグレーション
+├── lib.rs                          # メインエントリーポイント
+└── main.rs                         # バイナリエントリー
 ```
 
-**注**: このプロジェクトでは`mod.rs`を使わない方針を採用しています。詳細は[CODING_GUIDELINES.md](./CODING_GUIDELINES.md)を参照してください。
+**注**: このプロジェクトはモジュラーアーキテクチャと境界づけられたコンテキスト（DDD）を採用しています。詳細は[ARCHITECTURE.md](./ARCHITECTURE.md)を参照してください。
 
 ### フロントエンド (React + TypeScript)
 
@@ -129,43 +139,75 @@ use sea_orm_migration::MigratorTrait;
 migration::Migrator::up(&db, None).await?;
 ```
 
-### 3. SeaORMエンティティ (`entities.rs`)
+### 3. ドメインエンティティ (`modules/library/domain/entities/book.rs`)
 
-**重要**: このプロジェクトでは`mod.rs`を使わず、単一の`entities.rs`ファイルに全エンティティをまとめています。
+ドメイン層でビジネスルールとバリデーションを定義します：
 
 ```rust
-use async_graphql::*;
-use sea_orm::entity::prelude::*;
-use serde::{Deserialize, Serialize};
+use crate::modules::shared::domain::errors::DomainError;
 
-pub mod book {
-    use super::*;
+pub struct Book {
+    id: Option<i32>,
+    title: String,
+    author: Option<String>,
+    description: Option<String>,
+    published_year: Option<i32>,
+}
 
-    #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, SimpleObject)]
-    #[sea_orm(table_name = "books")]
-    #[graphql(concrete(name = "Book", params()))]
-    pub struct Model {
-        #[sea_orm(primary_key)]
-        pub id: i32,
-        pub title: String,
-        pub author: Option<String>,
-        pub description: Option<String>,
-        pub published_year: Option<i32>,
+impl Book {
+    pub fn new(title: String, ...) -> Result<Self, DomainError> {
+        // ビジネスルールのバリデーション
+        if title.trim().is_empty() {
+            return Err(DomainError::ValidationError("Title cannot be empty".to_string()));
+        }
+        Ok(Self { ... })
     }
-
-    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-    pub enum Relation {}
-
-    impl ActiveModelBehavior for ActiveModel {}
 }
 ```
 
-GraphQLの`SimpleObject`とSeaORMの`DeriveEntityModel`を組み合わせることで、
-単一のモデルでORMとGraphQLの両方に対応できます。
+### 4. SeaORM Models (`infrastructure/models/book.rs`)
 
-新しいエンティティを追加する場合は、同じファイル内に`pub mod`ブロックを追加します。
+DBスキーマの定義（コンテキスト外で全コンテキスト共有）：
 
-### 4. GraphQLスキーマ (`graphql/resolvers.rs`)
+```rust
+use sea_orm::entity::prelude::*;
+
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
+#[sea_orm(table_name = "books")]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub title: String,
+    pub author: Option<String>,
+    pub description: Option<String>,
+    pub published_year: Option<i32>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}
+```
+
+### 5. Repository実装 (`modules/library/infrastructure/repositories/book.rs`)
+
+ドメインモデルとDBモデルの変換を担当：
+
+```rust
+use crate::infrastructure::models::book;
+use crate::modules::library::domain::{entities::book::Book, repositories::book::BookRepository};
+
+pub struct BookRepositoryImpl {
+    db: DatabaseConnection,
+}
+
+impl BookRepositoryImpl {
+    fn domain_to_active_model(book: &Book) -> book::ActiveModel { ... }
+    fn db_to_domain(model: book::Model) -> Book { ... }
+}
+```
+
+### 6. GraphQLスキーマ (`presentation/library/`)
 
 #### Query
 
@@ -178,7 +220,7 @@ GraphQLの`SimpleObject`とSeaORMの`DeriveEntityModel`を組み合わせるこ�
 - `updateBook(...)`: 本を更新
 - `deleteBook(id: Int!)`: 本を削除
 
-### 5. Tauriコマンド (`lib.rs`)
+### 7. Tauriコマンド (`lib.rs`)
 
 ```rust
 #[tauri::command]
@@ -193,7 +235,7 @@ async fn execute_graphql(
 
 フロントエンドからGraphQLクエリ文字列を受け取り、実行結果をJSON文字列として返します。
 
-### 6. フロントエンドクライアント (`lib/graphql.ts`)
+### 8. フロントエンドクライアント (`lib/graphql.ts`)
 
 ```typescript
 export async function executeGraphQL<T = any>(

@@ -1,6 +1,6 @@
-// Application Layer - エラー型
+// Shared Application Layer - エラー型
 
-use crate::domain::errors::DomainError;
+use crate::modules::shared::domain::errors::DomainError;
 use std::fmt;
 
 #[derive(Debug)]
