@@ -28,25 +28,41 @@
 
 ```
 src-tauri/src/
-├── domain/                 # Domain Layer
-│   ├── entities.rs         # ドメインエンティティ
-│   ├── repositories.rs     # リポジトリtrait
-│   └── errors.rs           # ドメインエラー
-├── application/            # Application Layer
-│   ├── services.rs         # アプリケーションサービス
-│   ├── dto.rs              # データ転送オブジェクト
-│   └── errors.rs           # アプリケーションエラー
-├── infrastructure/         # Infrastructure Layer
-│   ├── repositories.rs     # リポジトリ実装
-│   └── models.rs           # SeaORMモデル
-├── presentation/           # Presentation Layer
-│   ├── query.rs            # GraphQL Query
-│   ├── mutation.rs         # GraphQL Mutation
-│   └── schema.rs           # GraphQLスキーマ構築
-├── lib.rs                  # エントリーポイント & DI
-├── database.rs             # データベース接続
-├── migration.rs            # マイグレーション
-└── main.rs                 # バイナリエントリー
+├── modules/                           # ドメインモジュール
+│   ├── library/                       # 図書管理の境界づけられたコンテキスト
+│   │   ├── domain/                    # Domain Layer
+│   │   │   ├── entities/
+│   │   │   │   └── book.rs            # ドメインエンティティ
+│   │   │   └── repositories/
+│   │   │       └── book.rs            # リポジトリtrait
+│   │   ├── application/               # Application Layer
+│   │   │   ├── dto/
+│   │   │   │   └── book.rs            # データ転送オブジェクト
+│   │   │   └── services/
+│   │   │       └── book.rs            # アプリケーションサービス
+│   │   └── infrastructure/            # Infrastructure Layer (実装部分)
+│   │       └── repositories/
+│   │           └── book.rs            # リポジトリ実装
+│   └── shared/                        # 全コンテキスト共通
+│       ├── domain/
+│       │   └── errors.rs              # ドメインエラー
+│       └── application/
+│           └── errors.rs              # アプリケーションエラー
+├── infrastructure/                    # 技術的詳細（コンテキスト外）
+│   └── models/                        # SeaORM Models（全コンテキスト共有）
+│       └── book.rs
+├── presentation/                      # Presentation Layer
+│   ├── schema.rs                      # GraphQLスキーマ構築
+│   └── library/
+│       ├── queries/
+│       │   └── book.rs                # GraphQL Query
+│       └── mutations/
+│           └── book.rs                # GraphQL Mutation
+├── app_state.rs                       # 依存性注入コンテナ
+├── database.rs                        # データベース接続
+├── migration.rs                       # マイグレーション
+├── lib.rs                             # エントリーポイント
+└── main.rs                            # バイナリエントリー
 ```
 
 ### 依存関係ルール
@@ -57,15 +73,16 @@ src-tauri/src/
 
 ### 各レイヤーの責務
 
-#### 1. Domain Layer (`domain/`)
+#### 1. Domain Layer (`modules/{context}/domain/`)
 
 **役割**: ビジネスロジックの中核
 
 **ファイル構成**:
 
-- `entities.rs` - ビジネスルールを持つドメインモデル
-- `repositories.rs` - データ永続化のインターフェース定義
-- `errors.rs` - ビジネスルール違反を表すエラー
+- `entities/book.rs` - ビジネスルールを持つドメインモデル
+- `repositories/book.rs` - データ永続化のインターフェース定義
+
+**共通エラー**: `modules/shared/domain/errors.rs`
 
 **ルール**:
 
@@ -76,7 +93,9 @@ src-tauri/src/
 **例**:
 
 ```rust
-// domain/entities.rs
+// modules/library/domain/entities/book.rs
+use crate::modules::shared::domain::errors::DomainError;
+
 pub struct Book {
     id: Option<i32>,
     title: String,
@@ -94,15 +113,16 @@ impl Book {
 }
 ```
 
-#### 2. Application Layer (`application/`)
+#### 2. Application Layer (`modules/{context}/application/`)
 
 **役割**: ユースケースの実装
 
 **ファイル構成**:
 
-- `services.rs` - ドメインを組み合わせてアプリケーション機能を提供
-- `dto.rs` - プレゼンテーション層とのデータ転送オブジェクト
-- `errors.rs` - アプリケーションエラー
+- `services/book.rs` - ドメインを組み合わせてアプリケーション機能を提供
+- `dto/book.rs` - プレゼンテーション層とのデータ転送オブジェクト
+
+**共通エラー**: `modules/shared/application/errors.rs`
 
 **ルール**:
 
@@ -113,12 +133,18 @@ impl Book {
 **例**:
 
 ```rust
-// application/services.rs
-pub struct BookService<R: BookRepository> {
-    repository: Arc<R>,
+// modules/library/application/services/book.rs
+use crate::modules::library::domain::{
+    entities::book::Book,
+    repositories::book::BookRepository,
+};
+use crate::modules::shared::application::errors::ApplicationError;
+
+pub struct BookService {
+    repository: Arc<dyn BookRepository>,
 }
 
-impl<R: BookRepository> BookService<R> {
+impl BookService {
     pub async fn create_book(...) -> Result<BookDto, ApplicationError> {
         let book = Book::new(...)?;  // ドメイン層
         let saved = self.repository.save(book).await?;
@@ -127,24 +153,31 @@ impl<R: BookRepository> BookService<R> {
 }
 ```
 
-#### 3. Infrastructure Layer (`infrastructure/`)
+#### 3. Infrastructure Layer
 
-**役割**: 技術的詳細の実装
+Infrastructure層は2つの場所に分かれています：
+
+**A. コンテキスト内** (`modules/{context}/infrastructure/`)
+
+**役割**: そのコンテキストのRepository実装
 
 **ファイル構成**:
-
-- `models.rs` - SeaORMモデル（データベーススキーマ）
-- `repositories.rs` - Domain層のリポジトリtraitを実装
+- `repositories/book.rs` - Domain層のリポジトリtraitを実装
 
 **ルール**:
-
-- SeaORMなどの技術的詳細はこの層のみ
 - ドメインモデル ↔ DBモデルの変換を担当
+- 自コンテキストのDomain層と共有`infrastructure/models/`に依存
 
 **例**:
 
 ```rust
-// infrastructure/repositories.rs
+// modules/library/infrastructure/repositories/book.rs
+use crate::infrastructure::models::book;  // 共有Modelを参照
+use crate::modules::library::domain::{
+    entities::book::Book,
+    repositories::book::BookRepository,
+};
+
 pub struct BookRepositoryImpl {
     db: DatabaseConnection,
 }
@@ -161,15 +194,24 @@ impl BookRepository for BookRepositoryImpl {
 }
 ```
 
+**B. コンテキスト外** (`infrastructure/`)
+
+**役割**: SeaORM Models（DBスキーマ）
+
+**ファイル構成**:
+- `models/book.rs` - SeaORMモデル（全コンテキスト共有）
+
+**理由**: SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
+
 #### 4. Presentation Layer (`presentation/`)
 
 **役割**: クライアントとの通信
 
 **ファイル構成**:
 
-- `query.rs` - GraphQL Query（読み取り操作）
-- `mutation.rs` - GraphQL Mutation（書き込み操作）
 - `schema.rs` - GraphQLスキーマ構築
+- `library/queries/book.rs` - GraphQL Query（読み取り操作）
+- `library/mutations/book.rs` - GraphQL Mutation（書き込み操作）
 
 **ルール**:
 
@@ -180,12 +222,16 @@ impl BookRepository for BookRepositoryImpl {
 **例**:
 
 ```rust
-// presentation/mutation.rs
+// presentation/library/mutations/book.rs
+use crate::app_state::AppState;
+use crate::modules::library::application::dto::book::BookDto;
+
 #[Object]
-impl MutationRoot {
+impl BookMutation {
     async fn create_book(&self, ctx: &Context<'_>, title: String, ...) -> Result<BookDto> {
-        let service = ctx.data::<Arc<BookService<...>>>()?;
-        service.create_book(title, ...)
+        let app_state = ctx.data::<AppState>()?;
+        app_state.book_service
+            .create_book(title, ...)
             .await
             .map_err(|e| Error::new(e.to_string()))
     }
@@ -201,17 +247,24 @@ impl MutationRoot {
 
 ### 新機能の追加手順
 
+例: `library`コンテキストに新しいエンティティ（Author）を追加する場合
+
 1. **Domain層**:
-   - `domain/entities.rs` にエンティティを追加
-   - `domain/repositories.rs` にリポジトリtraitを追加
+   - `modules/library/domain/entities/author.rs` にエンティティを追加
+   - `modules/library/domain/repositories/author.rs` にリポジトリtraitを追加
 2. **Infrastructure層**:
-   - `infrastructure/models.rs` にSeaORMモデルを追加
-   - `infrastructure/repositories.rs` にリポジトリ実装を追加
+   - `infrastructure/models/author.rs` にSeaORMモデルを追加（コンテキスト外）
+   - `modules/library/infrastructure/repositories/author.rs` にリポジトリ実装を追加（コンテキスト内）
 3. **Application層**:
-   - `application/services.rs` にサービスを追加
-   - `application/dto.rs` にDTOを追加
+   - `modules/library/application/services/author.rs` にサービスを追加
+   - `modules/library/application/dto/author.rs` にDTOを追加
 4. **Presentation層**:
-   - `presentation/query.rs` または `presentation/mutation.rs` にリゾルバーを追加
+   - `presentation/library/queries/author.rs` にクエリを追加
+   - `presentation/library/mutations/author.rs` にミューテーションを追加
+5. **依存性注入**:
+   - `app_state.rs` でサービスを登録
+
+詳細は `ARCHITECTURE.md` を参照してください。
 
 ## 📁 モジュール構造の方針
 
