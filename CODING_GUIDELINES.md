@@ -271,73 +271,85 @@ impl BookMutation {
 
 ## 📁 モジュール構造の方針
 
-### ⚠️ 重要: `mod.rs` を使用しない
+### ⚠️ 重要: `{folder}.rs` パターンを使用する
 
-このプロジェクトでは、**`mod.rs` ファイルを作成しない**方針を採用しています。
+このプロジェクトでは、**`mod.rs` ではなく `{folder}.rs` パターン**を採用しています。
 
-#### ❌ 避けるべき構造
+#### ❌ 避けるべき構造（古い方式）
 
 ```
 src/
 ├── entities/
-│   ├── mod.rs          # ❌ 使わない
+│   ├── mod.rs          # ❌ エディタで複数のmod.rsが開いて混乱する
 │   ├── book.rs
 │   └── user.rs
 └── migration/
-    ├── mod.rs          # ❌ 使わない
+    ├── mod.rs          # ❌ どのmod.rsか分かりにくい
     └── m20250108_create_table.rs
 ```
 
-#### ✅ 推奨する構造
+#### ✅ 推奨する構造（新しい方式）
 
 ```
 src/
-├── entities.rs         # ✅ 単一ファイルにまとめる
-└── migration.rs        # ✅ 単一ファイルにまとめる
+├── entities/
+│   ├── book.rs
+│   └── user.rs
+├── entities.rs         # ✅ モジュール宣言（mod.rsの代わり）
+└── migration.rs        # ✅ 単一ファイルの場合はそのまま
 ```
 
 ### 理由
 
-1. **シンプルさ**: ファイル数が少なくなり、プロジェクト構造が把握しやすい
-2. **保守性**: モジュール宣言が散らばらず、一箇所で管理できる
-3. **明確さ**: ディレクトリとモジュールの対応関係が明確になる
+1. **エディタの使いやすさ**: 複数の`mod.rs`タブが開かれて混乱することがない
+2. **明確さ**: ファイル名でモジュールが明確になる（`entities.rs`は`entities/`モジュール）
+3. **新しい推奨方式**: Rust 2018エディション以降で推奨されるパターン
+4. **保守性**: モジュール宣言がファイル名で判別できる
 
 ### 実装例
 
-#### ✅ 正しい実装: `entities.rs`
+#### ✅ 正しい実装例 1: 複数ファイルに分割する場合
 
+```
+src/
+├── modules/
+│   ├── library/
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   └── book.rs        # Bookエンティティの実装
+│   │   │   └── entities.rs        # モジュール宣言（mod.rsの代わり）
+│   │   └── domain.rs               # モジュール宣言
+│   └── library.rs                  # モジュール宣言
+└── modules.rs                      # モジュール宣言
+```
+
+**entities.rs（モジュール宣言ファイル）**:
 ```rust
-// Book Entity
-use async_graphql::*;
-use sea_orm::entity::prelude::*;
-use serde::{Deserialize, Serialize};
+// modules/library/domain/entities.rs
+pub mod book;
+// 将来authorを追加する場合
+// pub mod author;
+```
 
-pub mod book {
-    use super::*;
+**book.rs（実装ファイル）**:
+```rust
+// modules/library/domain/entities/book.rs
+use crate::modules::shared::domain::errors::DomainError;
 
-    #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, SimpleObject)]
-    #[sea_orm(table_name = "books")]
-    pub struct Model {
-        #[sea_orm(primary_key)]
-        pub id: i32,
-        pub title: String,
-        // ...
-    }
-
-    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-    pub enum Relation {}
-
-    impl ActiveModelBehavior for ActiveModel {}
+pub struct Book {
+    id: Option<i32>,
+    title: String,
+    // ...
 }
 
-// 今後、他のエンティティを追加する場合もこのファイルに追記
-pub mod user {
-    use super::*;
-    // User エンティティの実装
+impl Book {
+    pub fn new(title: String, ...) -> Result<Self, DomainError> {
+        // 実装
+    }
 }
 ```
 
-#### ✅ 正しい実装: `migration.rs`
+#### ✅ 正しい実装例 2: 単一ファイルの場合（migration.rs）
 
 ```rust
 use sea_orm_migration::prelude::*;
@@ -486,13 +498,13 @@ mod migration;    // migration.rs を参照
 
 ## 🚫 避けるべきパターン
 
-### 1. ディレクトリを作って `mod.rs` を配置する
+### 1. `mod.rs` パターン（古い方式）
 
 ```rust
 // ❌ 避ける
 src/
 └── entities/
-    ├── mod.rs
+    ├── mod.rs      # エディタで複数のmod.rsが開いて混乱
     └── book.rs
 ```
 
@@ -502,36 +514,38 @@ src/
 
 ## ✅ 推奨パターン
 
-### 1. 単一ファイルでモジュール管理
+### 1. `{folder}.rs` パターン（新しい方式）
 
 ```rust
 // ✅ 推奨
 src/
-└── entities.rs    # 内部でpub modを使って複数エンティティを定義
+├── entities/
+│   └── book.rs
+└── entities.rs    # モジュール宣言（mod.rsの代わり）
 ```
 
-### 2. 必要に応じてサブモジュール化
+### 2. 単一ファイルでまとめる（小規模な場合）
 
-ファイルが500行を超えるなど、明確に分割が必要な場合のみ、ディレクトリ構造を検討する。
-その場合でも `mod.rs` は使わず、明示的なファイル名を使う。
+ファイルが500行以下で、関連コードが少ない場合は単一ファイルにまとめる。
 
 ```rust
-// 大規模になった場合の例（現時点では不要）
+// ✅ 小規模なら単一ファイルでOK
 src/
-└── graphql/
-    ├── query.rs      # QueryRootの実装
-    ├── mutation.rs   # MutationRootの実装
-    └── types.rs      # 共通型定義
+└── migration.rs   # すべてのマイグレーションを含む
 ```
 
-そして `lib.rs` で：
+### 3. ディレクトリ構造の例
 
-```rust
-mod graphql {
-    pub mod query;
-    pub mod mutation;
-    pub mod types;
-}
+```
+src/
+├── modules/
+│   ├── library/
+│   │   └── domain/
+│   │       ├── entities/
+│   │       │   └── book.rs
+│   │       └── entities.rs  # モジュール宣言
+│   └── library.rs            # モジュール宣言
+└── modules.rs                # モジュール宣言
 ```
 
 ## ⚠️ トラブルシューティング
