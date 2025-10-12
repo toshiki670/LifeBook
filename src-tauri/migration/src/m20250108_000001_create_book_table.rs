@@ -49,4 +49,3 @@ enum Book {
     #[sea_orm(iden = "published_year")]
     PublishedYear,
 }
-
