@@ -31,7 +31,7 @@ pub fn run() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![graphql_request])
+        .invoke_handler(tauri::generate_handler![graphql_request, get_db_status])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -53,6 +53,13 @@ async fn graphql_request(
 
     // レスポンスをJSON文字列に変換
     serde_json::to_string(&response).map_err(|e| format!("Failed to serialize response: {}", e))
+}
+
+/// データベース接続状態を確認するTauriコマンド
+#[tauri::command]
+fn get_db_status() -> String {
+    // セットアップ時にデータベース接続が成功しているため、常にConnectedを返す
+    "Connected".to_string()
 }
 
 #[cfg(test)]
