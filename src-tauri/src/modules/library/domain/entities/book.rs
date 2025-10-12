@@ -193,4 +193,3 @@ mod tests {
         assert!(book.is_err());
     }
 }
-

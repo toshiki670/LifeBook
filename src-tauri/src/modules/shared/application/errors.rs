@@ -25,4 +25,3 @@ impl From<DomainError> for ApplicationError {
         ApplicationError::DomainError(error)
     }
 }
-

@@ -35,4 +35,3 @@ impl BookQuery {
             .map_err(|e| Error::new(e.to_string()))
     }
 }
-

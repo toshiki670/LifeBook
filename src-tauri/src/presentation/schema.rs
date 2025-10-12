@@ -16,7 +16,11 @@ pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 /// GraphQLスキーマを構築
 pub fn build_schema(app_state: AppState) -> AppSchema {
-    Schema::build(QueryRoot::default(), MutationRoot::default(), EmptySubscription)
-        .data(app_state)
-        .finish()
+    Schema::build(
+        QueryRoot::default(),
+        MutationRoot::default(),
+        EmptySubscription,
+    )
+    .data(app_state)
+    .finish()
 }

@@ -26,4 +26,3 @@ impl From<Book> for BookDto {
         }
     }
 }
-

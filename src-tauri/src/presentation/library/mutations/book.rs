@@ -65,4 +65,3 @@ impl BookMutation {
         Ok(true)
     }
 }
-

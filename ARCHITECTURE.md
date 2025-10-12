@@ -157,6 +157,7 @@ Infrastructure層は2つの場所に分かれています：
 **依存関係**: 自コンテキストのDomain層と、共有`infrastructure/models/`
 
 **実装例**:
+
 ```rust
 // modules/library/infrastructure/repositories/book.rs
 use crate::infrastructure::models::book;  // 共有Modelを参照
@@ -187,11 +188,13 @@ impl BookRepository for BookRepositoryImpl {
   - リレーション定義
 
 **なぜModelsはコンテキスト外か**:
+
 - SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
 - DBスキーマは技術的詳細で、複数のコンテキストから参照される
 - Repository実装はコンテキスト内にあるため、ドメインの独立性は保たれる
 
 **実装例**:
+
 ```rust
 // infrastructure/models/book.rs
 use sea_orm::entity::prelude::*;
@@ -271,6 +274,7 @@ infrastructure/models/
 ```
 
 **手順**:
+
 1. `domain/entities/author.rs` でエンティティとビジネスルールを定義
 2. `domain/repositories/author.rs` でリポジトリインターフェースを定義
 3. `application/dto/author.rs` でDTOを定義
@@ -362,10 +366,10 @@ impl AppState {
     pub fn new(db: DatabaseConnection) -> Self {
         // 1. Repository実装を作成（コンテキスト内から）
         let book_repo = Arc::new(BookRepositoryImpl::new(db.clone()));
-        
+
         // 2. Serviceを作成（Repositoryを注入）
         let book_service = Arc::new(BookService::new(book_repo));
-        
+
         Self { book_service }
     }
 }
