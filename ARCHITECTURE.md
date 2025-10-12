@@ -9,6 +9,7 @@ LifeBookは、クリーンアーキテクチャとドメイン駆動設計（DDD
 ### 1. クリーンアーキテクチャ
 
 依存関係の方向：
+
 ```
 Presentation → Application → Domain ← Infrastructure
 ```
@@ -40,22 +41,23 @@ src-tauri/src/
 │   │   │   │   └── book.rs           # Book Entity
 │   │   │   └── repositories/         # リポジトリインターフェース
 │   │   │       └── book.rs           # BookRepository trait
-│   │   └── application/              # Application層
-│   │       ├── dto/                  # データ転送オブジェクト
-│   │       │   └── book.rs           # BookDto
-│   │       └── services/             # アプリケーションサービス
-│   │           └── book.rs           # BookService
+│   │   ├── application/              # Application層
+│   │   │   ├── dto/                  # データ転送オブジェクト
+│   │   │   │   └── book.rs           # BookDto
+│   │   │   └── services/             # アプリケーションサービス
+│   │   │       └── book.rs           # BookService
+│   │   └── infrastructure/           # Infrastructure層
+│   │       └── repositories/         # Repository実装
+│   │           └── book.rs           # BookRepositoryImpl
 │   └── shared/                       # 全コンテキスト共通
 │       ├── domain/
 │       │   └── errors.rs             # 共通ドメインエラー
 │       └── application/
 │           └── errors.rs             # 共通アプリケーションエラー
 │
-├── infrastructure/                   # Infrastructure層（技術的詳細）
-│   ├── models/                       # SeaORM Models
-│   │   └── book.rs                   # Book Model + Relation
-│   └── repositories/                 # Repository実装
-│       └── book.rs                   # BookRepositoryImpl
+├── infrastructure/                   # 技術的詳細（コンテキスト外）
+│   └── models/                       # SeaORM Models（全コンテキスト共有）
+│       └── book.rs                   # Book Model + Relation
 │
 ├── presentation/                     # Presentation層
 │   ├── schema.rs                     # GraphQLスキーマ統合
@@ -88,6 +90,7 @@ src-tauri/src/
 **依存関係**: なし（他のレイヤーに依存しない）
 
 **実装例**:
+
 ```rust
 // modules/library/domain/entities/book.rs
 pub struct Book {
@@ -120,6 +123,7 @@ impl Book {
 **依存関係**: Domain層のみ
 
 **実装例**:
+
 ```rust
 // modules/library/application/services/book.rs
 pub struct BookService {
@@ -138,26 +142,25 @@ impl BookService {
 }
 ```
 
-### Infrastructure層（`infrastructure/`）
+### Infrastructure層
 
-**責務**: 技術的な実装詳細
+Infrastructure層は2つの場所に分かれています：
 
-- **models/**: SeaORM Model（DBスキーマ）
-  - テーブル定義
-  - リレーション定義
+#### 1. コンテキスト内（`modules/{context}/infrastructure/`）
+
+**責務**: そのコンテキストのRepository実装
+
 - **repositories/**: リポジトリの実装
   - ドメインモデル ↔ DBモデルの変換
   - DB操作
 
-**依存関係**: Domain層のインターフェースを実装
-
-**なぜinfrastructureは集約しているか**:
-- SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
-- DBスキーマは技術的詳細なので、集約してもドメインの独立性は保たれる
+**依存関係**: 自コンテキストのDomain層と、共有`infrastructure/models/`
 
 **実装例**:
 ```rust
-// infrastructure/repositories/book.rs
+// modules/library/infrastructure/repositories/book.rs
+use crate::infrastructure::models::book;  // 共有Modelを参照
+
 pub struct BookRepositoryImpl {
     db: DatabaseConnection,
 }
@@ -175,6 +178,41 @@ impl BookRepository for BookRepositoryImpl {
 }
 ```
 
+#### 2. コンテキスト外（`infrastructure/`）
+
+**責務**: SeaORM Model（DBスキーマ）の定義
+
+- **models/**: SeaORM Model
+  - テーブル定義
+  - リレーション定義
+
+**なぜModelsはコンテキスト外か**:
+- SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
+- DBスキーマは技術的詳細で、複数のコンテキストから参照される
+- Repository実装はコンテキスト内にあるため、ドメインの独立性は保たれる
+
+**実装例**:
+```rust
+// infrastructure/models/book.rs
+use sea_orm::entity::prelude::*;
+use super::author;  // 同じディレクトリ内で簡単に参照
+
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+#[sea_orm(table_name = "books")]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub title: String,
+    pub author_id: Option<i32>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(belongs_to = "author::Entity", from = "Column::AuthorId", to = "author::Column::Id")]
+    Author,
+}
+```
+
 ### Presentation層（`presentation/`）
 
 **責務**: API層（薄いアダプター）
@@ -186,6 +224,7 @@ impl BookRepository for BookRepositoryImpl {
 **依存関係**: Application層とDomain層
 
 **実装例**:
+
 ```rust
 // presentation/library/queries/book.rs
 #[Object]
@@ -214,13 +253,21 @@ modules/library/
   │   └── repositories/
   │       ├── book.rs
   │       └── author.rs           # 追加
-  └── application/
-      ├── dto/
-      │   ├── book.rs
-      │   └── author.rs           # 追加
-      └── services/
+  ├── application/
+  │   ├── dto/
+  │   │   ├── book.rs
+  │   │   └── author.rs           # 追加
+  │   └── services/
+  │       ├── book.rs
+  │       └── author.rs           # 追加
+  └── infrastructure/
+      └── repositories/
           ├── book.rs
           └── author.rs           # 追加
+
+infrastructure/models/
+  ├── book.rs
+  └── author.rs                   # 追加（コンテキスト外）
 ```
 
 **手順**:
@@ -228,8 +275,8 @@ modules/library/
 2. `domain/repositories/author.rs` でリポジトリインターフェースを定義
 3. `application/dto/author.rs` でDTOを定義
 4. `application/services/author.rs` でサービスを実装
-5. `infrastructure/models/author.rs` でSeaORM Modelを定義
-6. `infrastructure/repositories/author.rs` でリポジトリ実装
+5. `infrastructure/models/author.rs` でSeaORM Modelを定義（コンテキスト外）
+6. `infrastructure/repositories/author.rs` でリポジトリ実装（コンテキスト内）
 7. `presentation/library/queries/author.rs` でクエリを定義
 8. `presentation/library/mutations/author.rs` でミューテーションを定義
 9. 各`mod.rs`にモジュール宣言を追加
@@ -240,6 +287,7 @@ modules/library/
 例: `BookWithAuthor`として本と著者を一緒に取得
 
 **オプションA**: Presentation層で結合（簡単なケース）
+
 ```rust
 // presentation/library/queries/book_with_author.rs
 async fn book_with_author(...) -> Result<BookWithAuthorDto> {
@@ -250,6 +298,7 @@ async fn book_with_author(...) -> Result<BookWithAuthorDto> {
 ```
 
 **オプションB**: Coordination Serviceを作成（複雑なビジネスロジックがある場合）
+
 ```
 modules/library/application/services/
   ├── book.rs
@@ -282,10 +331,16 @@ modules/
   │   ├── domain/
   │   │   ├── entities/
   │   │   └── repositories/
-  │   └── application/
-  │       ├── dto/
-  │       └── services/
+  │   ├── application/
+  │   │   ├── dto/
+  │   │   └── services/
+  │   └── infrastructure/
+  │       └── repositories/
   └── shared/
+
+infrastructure/models/
+  ├── book.rs           # 既存
+  └── user.rs           # 追加（コンテキスト外）
 ```
 
 ## 依存性注入
@@ -293,6 +348,11 @@ modules/
 `app_state.rs`で依存関係を構築します。
 
 ```rust
+use crate::modules::library::{
+    application::services::book::BookService,
+    infrastructure::repositories::book::BookRepositoryImpl,
+};
+
 pub struct AppState {
     pub book_service: Arc<BookService>,
     // 他のサービスを追加
@@ -300,7 +360,7 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(db: DatabaseConnection) -> Self {
-        // 1. Repository実装を作成
+        // 1. Repository実装を作成（コンテキスト内から）
         let book_repo = Arc::new(BookRepositoryImpl::new(db.clone()));
         
         // 2. Serviceを作成（Repositoryを注入）
@@ -314,11 +374,12 @@ impl AppState {
 ## テスト戦略
 
 ### Domain層のテスト
+
 ```rust
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_create_valid_book() {
         let book = Book::new("Title".to_string(), ...);
@@ -328,9 +389,11 @@ mod tests {
 ```
 
 ### Application層のテスト
+
 - モックリポジトリを使用してサービスをテスト
 
 ### Integration テスト
+
 - 実際のDBを使用してエンドツーエンドでテスト
 
 ## ベストプラクティス
@@ -339,16 +402,12 @@ mod tests {
 
 1. **ビジネスルールはDomain層に**
    - バリデーションはエンティティに
-   
 2. **薄いPresentation層を保つ**
    - Application Serviceへの委譲のみ
-   
 3. **Repository経由でのみDB操作**
    - 直接SeaORMを使わない
-   
 4. **DTOで境界を明確に**
    - ドメインモデルを直接返さない
-   
 5. **エラーは各層で適切に変換**
    - DomainError → ApplicationError → GraphQL Error
 
@@ -356,13 +415,10 @@ mod tests {
 
 1. **Presentation層でビジネスロジック**
    - Application/Domain層に移動
-   
 2. **Domain層が他のレイヤーに依存**
    - 依存の方向を逆転させる
-   
 3. **複数のコンテキストが密結合**
    - Coordinationサービスで調整
-   
 4. **大きすぎるファイル**
    - 適切に分割する
 
@@ -377,4 +433,3 @@ mod tests {
 - ✅ **チーム開発**: コンフリクトが起きにくい
 
 質問や改善提案があれば、このドキュメントを更新してください。
-

@@ -1,4 +1,4 @@
-// Infrastructure Layer - Book リポジトリ実装
+// Library Infrastructure Layer - Book リポジトリ実装
 
 use crate::infrastructure::models::book;
 use crate::modules::library::domain::{
