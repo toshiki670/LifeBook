@@ -1,4 +1,4 @@
-// Infrastructure Layer - Book SeaORMモデル（DBスキーマ）
+// Entity Layer - Book SeaORMモデル（DBスキーマ）
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
