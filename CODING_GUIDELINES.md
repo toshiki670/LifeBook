@@ -162,9 +162,11 @@ Infrastructure層は2つの場所に分かれています：
 **役割**: そのコンテキストのRepository実装
 
 **ファイル構成**:
+
 - `repositories/book.rs` - Domain層のリポジトリtraitを実装
 
 **ルール**:
+
 - ドメインモデル ↔ DBモデルの変換を担当
 - 自コンテキストのDomain層と共有`infrastructure/models/`に依存
 
@@ -199,6 +201,7 @@ impl BookRepository for BookRepositoryImpl {
 **役割**: SeaORM Models（DBスキーマ）
 
 **ファイル構成**:
+
 - `models/book.rs` - SeaORMモデル（全コンテキスト共有）
 
 **理由**: SeaORMのRelation定義では、同じディレクトリ内の方が参照が容易
