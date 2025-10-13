@@ -1,4 +1,4 @@
-import { Form, useActionData, useLoaderData, useNavigation } from "react-router"
+import { Form, Link, useActionData, useLoaderData, useNavigation } from "react-router"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
@@ -75,7 +75,12 @@ export default function Books() {
   return (
     <div className="container mx-auto p-8">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">LifeBook - GraphQL Demo</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-4xl font-bold">LifeBook - GraphQL Demo</h1>
+          <Button asChild variant="outline">
+            <Link to="/">← ホームへ戻る</Link>
+          </Button>
+        </div>
         <p className="text-muted-foreground">SeaORM + GraphQL + Tauri の統合デモ</p>
         <p className="text-sm text-muted-foreground mt-2">
           DB Status: <span className="font-semibold">{dbStatus}</span>
@@ -202,6 +207,36 @@ export default function Books() {
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  return (
+    <div className="container mx-auto p-8">
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-4xl font-bold">エラーが発生しました</h1>
+          <Button asChild variant="outline">
+            <Link to="/">← ホームへ戻る</Link>
+          </Button>
+        </div>
+      </div>
+
+      <Alert variant="destructive">
+        <AlertDescription>
+          <p className="font-semibold mb-2">データの読み込みに失敗しました</p>
+          <p className="text-sm">{error instanceof Error ? error.message : "不明なエラーが発生しました"}</p>
+        </AlertDescription>
+      </Alert>
+
+      <div className="mt-4">
+        <Button asChild>
+          <Link to="/books" reloadDocument>
+            再読み込み
+          </Link>
+        </Button>
+      </div>
     </div>
   )
 }
