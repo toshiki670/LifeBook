@@ -17,7 +17,15 @@ import { SiteHeader } from "~/components/ui/site-header"
 
 export default function Layout() {
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "16rem",
+          "--sidebar-width-icon": "3rem",
+          "--header-height": "4rem",
+        } as React.CSSProperties
+      }
+    >
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <SidebarMenu>
@@ -56,8 +64,12 @@ export default function Layout() {
       </Sidebar>
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <Outlet />
+        <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <Outlet />
+            </div>
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
