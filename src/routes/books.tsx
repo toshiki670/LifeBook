@@ -226,7 +226,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <Alert variant="destructive">
         <AlertDescription>
           <p className="font-semibold mb-2">データの読み込みに失敗しました</p>
-          <p className="text-sm">{error instanceof Error ? error.message : "不明なエラーが発生しました"}</p>
+          <p className="text-sm">
+            {error instanceof Error ? error.message : "不明なエラーが発生しました"}
+          </p>
         </AlertDescription>
       </Alert>
 
