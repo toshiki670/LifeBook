@@ -19,7 +19,7 @@ import {
 export default function Layout() {
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="offcanvas">
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
