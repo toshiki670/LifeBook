@@ -16,7 +16,9 @@ export default function Home() {
       <Welcome />
       <div className="flex justify-center mt-8">
         <Button asChild size="lg">
-          <Link to="/books">📚 Book Manager (GraphQL Demo) へ</Link>
+          <Link to="/books" prefetch="intent">
+            📚 Book Manager (GraphQL Demo) へ
+          </Link>
         </Button>
       </div>
     </div>
