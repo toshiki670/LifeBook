@@ -195,10 +195,10 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className={cn(
-          "group peer text-sidebar-foreground",
-          state === "expanded" ? "w-[--sidebar-width]" : "w-[--sidebar-width-icon]"
-        )}
+        className="group peer text-sidebar-foreground"
+        style={{
+          width: state === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)",
+        }}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
