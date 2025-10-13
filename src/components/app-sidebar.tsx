@@ -15,131 +15,57 @@ import {
 } from "~/components/ui/sidebar"
 import { VersionSwitcher } from "~/components/version-switcher"
 
-// This is sample data.
+// LifeBook navigation data
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+  versions: ["0.1.0"],
   navMain: [
     {
-      title: "Getting Started",
-      url: "#",
+      title: "ダッシュボード",
+      url: "/",
       items: [
         {
-          title: "Installation",
-          url: "#",
-        },
-        {
-          title: "Project Structure",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Building Your Application",
-      url: "#",
-      items: [
-        {
-          title: "Routing",
-          url: "#",
-        },
-        {
-          title: "Data Fetching",
-          url: "#",
+          title: "概要",
+          url: "/",
           isActive: true,
         },
+      ],
+    },
+    {
+      title: "ライブラリ",
+      url: "#",
+      items: [
         {
-          title: "Rendering",
+          title: "書籍管理",
+          url: "/books",
+        },
+        {
+          title: "著者",
           url: "#",
         },
         {
-          title: "Caching",
+          title: "出版社",
           url: "#",
         },
         {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
+          title: "タグ",
           url: "#",
         },
       ],
     },
     {
-      title: "API Reference",
+      title: "設定",
       url: "#",
       items: [
         {
-          title: "Components",
+          title: "アプリケーション設定",
           url: "#",
         },
         {
-          title: "File Conventions",
+          title: "データベース",
           url: "#",
         },
         {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
+          title: "バックアップ",
           url: "#",
         },
       ],
@@ -161,10 +87,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
+                {item.items.map((subItem) => (
+                  <SidebarMenuItem key={subItem.title}>
+                    <SidebarMenuButton asChild isActive={"isActive" in subItem ? subItem.isActive : false}>
+                      <a href={subItem.url}>{subItem.title}</a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
