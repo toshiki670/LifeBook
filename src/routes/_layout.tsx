@@ -17,8 +17,8 @@ import { SiteHeader } from "~/components/ui/site-header"
 
 export default function Layout() {
   return (
-    <SidebarProvider>
-      <Sidebar collapsible="offcanvas">
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar collapsible="icon">
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
