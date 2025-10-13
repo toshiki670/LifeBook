@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from "react"
+import { Form, useActionData, useLoaderData, useNavigation } from "react-router"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { type Book, createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
+import { createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
 import type { Route } from "./+types/books"
 
 export function meta(_: Route.MetaArgs) {
@@ -15,82 +15,62 @@ export function meta(_: Route.MetaArgs) {
   ]
 }
 
+export async function clientLoader() {
+  const [booksResponse, dbStatus] = await Promise.all([getBooks(), getDbStatus()])
+
+  if (booksResponse.errors) {
+    throw new Error(booksResponse.errors[0]?.message || "Failed to load books")
+  }
+
+  return {
+    books: booksResponse.data?.books || [],
+    dbStatus,
+  }
+}
+
+export async function clientAction({ request }: Route.ClientActionArgs) {
+  const formData = await request.formData()
+  const intent = formData.get("intent")
+
+  if (intent === "create") {
+    const title = formData.get("title") as string
+    const author = formData.get("author") as string
+    const description = formData.get("description") as string
+    const publishedYear = formData.get("publishedYear") as string
+
+    const bookData = {
+      title,
+      author: author || undefined,
+      description: description || undefined,
+      publishedYear: publishedYear ? parseInt(publishedYear, 10) : undefined,
+    }
+
+    const response = await createBook(bookData)
+    if (response.errors) {
+      return { success: false, error: response.errors[0]?.message || "Failed to create book" }
+    }
+    return { success: true, message: "本を追加しました" }
+  }
+
+  if (intent === "delete") {
+    const id = parseInt(formData.get("id") as string, 10)
+    const response = await deleteBook(id)
+    if (response.errors) {
+      return { success: false, error: response.errors[0]?.message || "Failed to delete book" }
+    }
+    return { success: true, message: "本を削除しました" }
+  }
+
+  return { success: false, error: "Unknown action" }
+}
+
 export default function Books() {
-  const [books, setBooks] = useState<Book[]>([])
-  const [dbStatus, setDbStatus] = useState<string>("Unknown")
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [newBook, setNewBook] = useState({
-    title: "",
-    author: "",
-    description: "",
-    publishedYear: "",
-  })
+  const { books, dbStatus } = useLoaderData<typeof clientLoader>()
+  const actionData = useActionData<typeof clientAction>()
+  const navigation = useNavigation()
 
-  const checkDbStatus = useCallback(async () => {
-    try {
-      const status = await getDbStatus()
-      setDbStatus(status)
-    } catch (err) {
-      console.error("Failed to check DB status:", err)
-    }
-  }, [])
-
-  const loadBooks = useCallback(async () => {
-    try {
-      setLoading(true)
-      const response = await getBooks()
-      if (response.errors) {
-        setError(response.errors[0]?.message || "Unknown error")
-      } else if (response.data) {
-        setBooks(response.data.books || [])
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load books")
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    loadBooks()
-    checkDbStatus()
-  }, [checkDbStatus, loadBooks])
-
-  const handleCreateBook = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const bookData = {
-        title: newBook.title,
-        author: newBook.author || undefined,
-        description: newBook.description || undefined,
-        publishedYear: newBook.publishedYear ? parseInt(newBook.publishedYear, 10) : undefined,
-      }
-
-      const response = await createBook(bookData)
-      if (response.errors) {
-        setError(response.errors[0]?.message || "Failed to create book")
-      } else {
-        setNewBook({ title: "", author: "", description: "", publishedYear: "" })
-        loadBooks()
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create book")
-    }
-  }
-
-  const handleDeleteBook = async (id: number) => {
-    try {
-      const response = await deleteBook(id)
-      if (response.errors) {
-        setError(response.errors[0]?.message || "Failed to delete book")
-      } else {
-        loadBooks()
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete book")
-    }
-  }
+  const isSubmitting = navigation.state === "submitting"
+  const isLoading = navigation.state === "loading"
 
   return (
     <div className="container mx-auto p-8">
@@ -102,9 +82,15 @@ export default function Books() {
         </p>
       </div>
 
-      {error && (
+      {actionData?.success === false && actionData.error && (
         <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{actionData.error}</AlertDescription>
+        </Alert>
+      )}
+
+      {actionData?.success && actionData.message && (
+        <Alert className="mb-4">
+          <AlertDescription>{actionData.message}</AlertDescription>
         </Alert>
       )}
 
@@ -114,54 +100,55 @@ export default function Books() {
           <CardTitle>新しい本を追加</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleCreateBook} className="space-y-4">
+          <Form method="post" className="space-y-4">
+            <input type="hidden" name="intent" value="create" />
             <div className="space-y-2">
               <Label htmlFor="title">
                 タイトル <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="title"
+                name="title"
                 type="text"
                 required
-                value={newBook.title}
-                onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
                 placeholder="本のタイトル"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="author">著者</Label>
               <Input
                 id="author"
+                name="author"
                 type="text"
-                value={newBook.author}
-                onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
                 placeholder="著者名"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">説明</Label>
               <Textarea
                 id="description"
-                value={newBook.description}
-                onChange={(e) => setNewBook({ ...newBook, description: e.target.value })}
+                name="description"
                 placeholder="本の説明"
                 rows={3}
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="publishedYear">出版年</Label>
               <Input
                 id="publishedYear"
+                name="publishedYear"
                 type="number"
-                value={newBook.publishedYear}
-                onChange={(e) => setNewBook({ ...newBook, publishedYear: e.target.value })}
                 placeholder="2024"
+                disabled={isSubmitting}
               />
             </div>
-            <Button type="submit" className="w-full">
-              追加
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "追加中..." : "追加"}
             </Button>
-          </form>
+          </Form>
         </CardContent>
       </Card>
 
@@ -171,7 +158,7 @@ export default function Books() {
           <CardTitle>本のリスト</CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
+          {isLoading ? (
             <p className="text-muted-foreground">読み込み中...</p>
           ) : books.length === 0 ? (
             <p className="text-muted-foreground">
@@ -195,14 +182,18 @@ export default function Books() {
                           </p>
                         )}
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteBook(book.id)}
-                        className="ml-4"
-                      >
-                        削除
-                      </Button>
+                      <Form method="post" className="ml-4">
+                        <input type="hidden" name="intent" value="delete" />
+                        <input type="hidden" name="id" value={book.id} />
+                        <Button
+                          type="submit"
+                          variant="destructive"
+                          size="sm"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "削除中..." : "削除"}
+                        </Button>
+                      </Form>
                     </div>
                   </CardContent>
                 </Card>
