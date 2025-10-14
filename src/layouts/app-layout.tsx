@@ -1,7 +1,7 @@
 "use client"
 
 import { Outlet } from "react-router"
-import { AppSidebar } from "~/components/app-sidebar"
+import { AppSidebar } from "~/components/common/app-sidebar"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 
 export default function AppLayout() {
@@ -14,3 +14,4 @@ export default function AppLayout() {
     </SidebarProvider>
   )
 }
+

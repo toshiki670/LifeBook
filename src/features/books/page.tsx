@@ -1,13 +1,13 @@
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "react-router"
-import { AppHeader } from "~/components/app-header"
+import { AppHeader } from "~/components/common/app-header"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { createBook, deleteBook, getBooks, getDbStatus } from "../lib/graphql"
-import type { Route } from "./+types/books"
+import { createBook, deleteBook, getBooks, getDbStatus } from "~/lib/graphql"
+import type { Route } from "./+types/page"
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -238,3 +238,4 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </>
   )
 }
+

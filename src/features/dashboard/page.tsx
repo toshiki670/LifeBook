@@ -1,4 +1,4 @@
-import { AppHeader } from "~/components/app-header"
+import { AppHeader } from "~/components/common/app-header"
 
 export default function Dashboard() {
   return (
@@ -15,3 +15,4 @@ export default function Dashboard() {
     </>
   )
 }
+

@@ -1,6 +1,7 @@
 import type * as React from "react"
 
-import { SearchForm } from "~/components/search-form"
+import { SearchForm } from "~/components/common/search-form"
+import { VersionSwitcher } from "~/components/common/version-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +14,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "~/components/ui/sidebar"
-import { VersionSwitcher } from "~/components/version-switcher"
 
 // LifeBook navigation data
 const data = {
