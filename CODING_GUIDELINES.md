@@ -298,6 +298,8 @@ impl BookMutation {
 
 #### ❌ 避けるべき構造（古い方式）
 
+**パターン1: `mod.rs` を使う方式**
+
 ```
 src/
 ├── entities/
@@ -309,15 +311,40 @@ src/
     └── m20250108_create_table.rs
 ```
 
+**パターン2: `#[path]` 属性を使った冗長な構造**
+
+```
+src/
+├── lib.rs
+│   #[path = "application/application.rs"]  # ❌ 冗長で不必要
+│   pub mod application;
+├── application/
+│   ├── application.rs  # ❌ フォルダ内に同名ファイル
+│   ├── dto.rs
+│   └── services.rs
+```
+
+この構造は以下の問題があります：
+
+- `#[path]` 属性が不要に使われている
+- `application/application.rs` という冗長な命名
+- Rust の標準的なモジュール解決ルールを無視している
+
 #### ✅ 推奨する構造（新しい方式）
 
 ```
 src/
+├── lib.rs
+│   pub mod application;  # ✅ シンプルな宣言（#[path]不要）
+├── application.rs        # ✅ モジュール宣言（フォルダと同じ階層）
+├── application/
+│   ├── dto.rs
+│   └── services.rs
 ├── entities/
 │   ├── book.rs
 │   └── user.rs
-├── entities.rs         # ✅ モジュール宣言（mod.rsの代わり）
-└── migration.rs        # ✅ 単一ファイルの場合はそのまま
+├── entities.rs           # ✅ モジュール宣言（mod.rsの代わり）
+└── migration.rs          # ✅ 単一ファイルの場合はそのまま
 ```
 
 ### 理由
@@ -326,6 +353,7 @@ src/
 2. **明確さ**: ファイル名でモジュールが明確になる（`entities.rs`は`entities/`モジュール）
 3. **新しい推奨方式**: Rust 2018エディション以降で推奨されるパターン
 4. **保守性**: モジュール宣言がファイル名で判別できる
+5. **シンプルさ**: `#[path]` 属性が不要で、Rustの標準的なモジュール解決ルールに従う
 
 ### 実装例
 
