@@ -9,4 +9,5 @@ name = "shared"
 path = "src/lib.rs"
 
 [dependencies]
+thiserror = "1.0"
 
