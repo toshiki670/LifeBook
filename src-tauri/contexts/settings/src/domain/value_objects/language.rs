@@ -30,7 +30,6 @@ impl FromStr for Language {
 }
 
 impl Language {
-
     /// Languageを文字列コードに変換
     pub fn as_str(&self) -> &'static str {
         match self {

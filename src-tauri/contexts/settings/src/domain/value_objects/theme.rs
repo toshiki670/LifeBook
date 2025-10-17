@@ -31,7 +31,6 @@ impl FromStr for Theme {
 }
 
 impl Theme {
-
     /// Themeを文字列に変換
     pub fn as_str(&self) -> &'static str {
         match self {
