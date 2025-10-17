@@ -44,7 +44,7 @@ impl Default for DatabaseSettings {
 }
 
 // PathBufのシリアライズヘルパー
-fn serialize_pathbuf<S>(path: &PathBuf, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_pathbuf<S>(path: &std::path::Path, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {

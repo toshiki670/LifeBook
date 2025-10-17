@@ -1,6 +1,7 @@
 // Settings Domain Layer - Theme Value Object
 
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// テーマのValue Object
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -13,9 +14,10 @@ pub enum Theme {
     System,
 }
 
-impl Theme {
-    /// 文字列からThemeに変換（バリデーション付き）
-    pub fn from_str(s: &str) -> Result<Self, String> {
+impl FromStr for Theme {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "light" => Ok(Self::Light),
             "dark" => Ok(Self::Dark),
@@ -26,6 +28,9 @@ impl Theme {
             )),
         }
     }
+}
+
+impl Theme {
 
     /// Themeを文字列に変換
     pub fn as_str(&self) -> &'static str {

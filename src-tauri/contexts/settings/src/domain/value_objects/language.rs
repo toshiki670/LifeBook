@@ -1,6 +1,7 @@
 // Settings Domain Layer - Language Value Object
 
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// 言語のValue Object
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -16,15 +17,19 @@ pub enum Language {
     // Korean,
 }
 
-impl Language {
-    /// 文字列からLanguageに変換（バリデーション付き）
-    pub fn from_str(s: &str) -> Result<Self, String> {
+impl FromStr for Language {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "ja" | "japanese" => Ok(Self::Japanese),
             "en" | "english" => Ok(Self::English),
             _ => Err(format!("Invalid language: '{}'. Expected 'ja' or 'en'", s)),
         }
     }
+}
+
+impl Language {
 
     /// Languageを文字列コードに変換
     pub fn as_str(&self) -> &'static str {
