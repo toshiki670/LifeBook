@@ -2619,6 +2619,7 @@ dependencies = [
  "sea-orm-migration",
  "serde",
  "serde_json",
+ "settings",
  "shared",
  "tauri",
  "tauri-build",
@@ -4591,6 +4592,20 @@ checksum = "d52aa42f8fdf0fed91e5ce7f23d8138441002fa31dca008acf47e6fd4721f741"
 dependencies = [
  "nodrop",
  "stable_deref_trait",
+]
+
+[[package]]
+name = "settings"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-graphql",
+ "async-trait",
+ "serde",
+ "serde_json",
+ "shared",
+ "tempfile",
+ "tokio",
 ]
 
 [[package]]

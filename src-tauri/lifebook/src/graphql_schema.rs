@@ -3,6 +3,7 @@
 use crate::app_state::AppState;
 use async_graphql::*;
 use library::{BookMutation, BookQuery};
+use settings::{SettingsMutation, SettingsQuery};
 
 /// クエリのルート
 #[derive(Default)]
@@ -13,6 +14,11 @@ impl QueryRoot {
     /// Libraryコンテキストへのアクセス
     async fn library(&self) -> BookQuery {
         BookQuery
+    }
+
+    /// Settingsコンテキストへのアクセス
+    async fn settings(&self) -> SettingsQuery {
+        SettingsQuery
     }
 }
 
@@ -26,6 +32,11 @@ impl MutationRoot {
     async fn library(&self) -> BookMutation {
         BookMutation
     }
+
+    /// Settingsコンテキストのミューテーション
+    async fn settings(&self) -> SettingsMutation {
+        SettingsMutation
+    }
 }
 
 pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
@@ -34,5 +45,6 @@ pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 pub fn build_schema(app_state: AppState) -> AppSchema {
     Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(app_state.book_service)
+        .data(app_state.settings_service)
         .finish()
 }

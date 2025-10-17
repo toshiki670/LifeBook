@@ -39,4 +39,5 @@ chrono = "0.4"
 migration = { path = "../migration" }
 entity = { path = "../entity" }
 library = { path = "../contexts/library" }
+settings = { path = "../contexts/settings" }
 shared = { path = "../contexts/shared" }
