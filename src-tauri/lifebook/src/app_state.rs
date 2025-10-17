@@ -2,7 +2,7 @@
 
 use library::{BookRepositoryImpl, BookService};
 use sea_orm::DatabaseConnection;
-use settings::{SettingsFileStorage, SettingsService};
+use settings::{SettingsRepositoryImpl, SettingsService};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -19,8 +19,8 @@ impl AppState {
         let book_service = Arc::new(BookService::new(book_repo));
 
         // Settings Context
-        let settings_storage = Arc::new(SettingsFileStorage::new(config_dir));
-        let settings_service = Arc::new(SettingsService::new(settings_storage));
+        let settings_repo = Arc::new(SettingsRepositoryImpl::new(config_dir));
+        let settings_service = Arc::new(SettingsService::new(settings_repo));
 
         Self {
             book_service,

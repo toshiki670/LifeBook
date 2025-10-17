@@ -4,11 +4,11 @@ use crate::{
     application::dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
     domain::{
         entities::AppSettings,
+        repositories::SettingsRepository,
         value_objects::{Language, Theme},
     },
-    infrastructure::SettingsFileStorage,
 };
-use anyhow::Result;
+use shared::domain::errors::DomainError;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -16,22 +16,22 @@ use tokio::sync::RwLock;
 
 /// 設定管理サービス
 pub struct SettingsService {
-    storage: Arc<SettingsFileStorage>,
+    repository: Arc<dyn SettingsRepository>,
     // メモリキャッシュ（頻繁な読み込みを避けるため）
     cache: Arc<RwLock<Option<AppSettings>>>,
 }
 
 impl SettingsService {
     /// 新しいサービスインスタンスを作成
-    pub fn new(storage: Arc<SettingsFileStorage>) -> Self {
+    pub fn new(repository: Arc<dyn SettingsRepository>) -> Self {
         Self {
-            storage,
+            repository,
             cache: Arc::new(RwLock::new(None)),
         }
     }
 
     /// 設定を読み込む（キャッシュを使用）
-    async fn load_settings(&self) -> Result<AppSettings> {
+    async fn load_settings(&self) -> Result<AppSettings, DomainError> {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
@@ -40,8 +40,8 @@ impl SettingsService {
             }
         }
 
-        // キャッシュがない場合はファイルから読み込む
-        let settings = self.storage.load().await?;
+        // キャッシュがない場合はリポジトリから読み込む
+        let settings = self.repository.load().await?;
 
         // キャッシュを更新
         {
@@ -53,9 +53,9 @@ impl SettingsService {
     }
 
     /// 設定を保存（キャッシュも更新）
-    async fn save_settings(&self, settings: &AppSettings) -> Result<()> {
-        // ファイルに保存
-        self.storage.save(settings).await?;
+    async fn save_settings(&self, settings: &AppSettings) -> Result<(), DomainError> {
+        // リポジトリに保存
+        self.repository.save(settings).await?;
 
         // キャッシュを更新
         {
@@ -67,19 +67,19 @@ impl SettingsService {
     }
 
     /// 一般設定を取得
-    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto> {
+    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto, DomainError> {
         let settings = self.load_settings().await?;
         Ok(settings.general.into())
     }
 
     /// 表示設定を取得
-    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto> {
+    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto, DomainError> {
         let settings = self.load_settings().await?;
         Ok(settings.appearance.into())
     }
 
     /// データベース設定を取得
-    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto> {
+    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto, DomainError> {
         let settings = self.load_settings().await?;
         Ok(settings.database.into())
     }
@@ -88,13 +88,13 @@ impl SettingsService {
     pub async fn update_general_settings(
         &self,
         language: Option<String>,
-    ) -> Result<GeneralSettingsDto> {
+    ) -> Result<GeneralSettingsDto, DomainError> {
         let mut settings = self.load_settings().await?;
 
         // 言語を更新
         if let Some(lang_str) = language {
             let language = Language::from_str(&lang_str)
-                .map_err(|e| anyhow::anyhow!("Invalid language: {}", e))?;
+                .map_err(|e| DomainError::ValidationError(format!("Invalid language: {}", e)))?;
             settings.general.language = language;
         }
 
@@ -106,13 +106,13 @@ impl SettingsService {
     pub async fn update_appearance_settings(
         &self,
         theme: Option<String>,
-    ) -> Result<AppearanceSettingsDto> {
+    ) -> Result<AppearanceSettingsDto, DomainError> {
         let mut settings = self.load_settings().await?;
 
         // テーマを更新
         if let Some(theme_str) = theme {
-            let theme =
-                Theme::from_str(&theme_str).map_err(|e| anyhow::anyhow!("Invalid theme: {}", e))?;
+            let theme = Theme::from_str(&theme_str)
+                .map_err(|e| DomainError::ValidationError(format!("Invalid theme: {}", e)))?;
             settings.appearance.theme = theme;
         }
 
@@ -124,7 +124,7 @@ impl SettingsService {
     pub async fn update_database_settings(
         &self,
         database_directory: Option<String>,
-    ) -> Result<DatabaseSettingsDto> {
+    ) -> Result<DatabaseSettingsDto, DomainError> {
         let mut settings = self.load_settings().await?;
 
         // データベースディレクトリを更新
@@ -132,14 +132,13 @@ impl SettingsService {
             let path = PathBuf::from(dir_str);
 
             // ディレクトリのバリデーション（親ディレクトリが存在するか）
-            if let Some(parent) = path.parent()
-                && !parent.exists()
-                && parent != std::path::Path::new("")
-            {
-                return Err(anyhow::anyhow!(
-                    "Parent directory does not exist: {}",
-                    parent.display()
-                ));
+            if let Some(parent) = path.parent() {
+                if !parent.exists() && parent != std::path::Path::new("") {
+                    return Err(DomainError::ValidationError(format!(
+                        "Parent directory does not exist: {}",
+                        parent.display()
+                    )));
+                }
             }
 
             settings.database.database_directory = path;
@@ -150,9 +149,9 @@ impl SettingsService {
     }
 
     /// すべての設定をリセット
-    pub async fn reset_all_settings(&self) -> Result<()> {
+    pub async fn reset_all_settings(&self) -> Result<(), DomainError> {
         // 設定ファイルを削除
-        self.storage.delete().await?;
+        self.repository.delete().await?;
 
         // キャッシュをクリア
         {
@@ -167,13 +166,14 @@ impl SettingsService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::infrastructure::repositories::SettingsRepositoryImpl;
     use tempfile::TempDir;
 
     #[tokio::test]
     async fn test_get_default_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = Arc::new(SettingsFileStorage::new(temp_dir.path().to_path_buf()));
-        let service = SettingsService::new(storage);
+        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let service = SettingsService::new(repository);
 
         let general = service.get_general_settings().await.unwrap();
         assert_eq!(general.language, "ja");
@@ -185,8 +185,8 @@ mod tests {
     #[tokio::test]
     async fn test_update_general_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = Arc::new(SettingsFileStorage::new(temp_dir.path().to_path_buf()));
-        let service = SettingsService::new(storage);
+        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let service = SettingsService::new(repository);
 
         let updated = service
             .update_general_settings(Some("en".to_string()))
@@ -202,8 +202,8 @@ mod tests {
     #[tokio::test]
     async fn test_update_appearance_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = Arc::new(SettingsFileStorage::new(temp_dir.path().to_path_buf()));
-        let service = SettingsService::new(storage);
+        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let service = SettingsService::new(repository);
 
         let updated = service
             .update_appearance_settings(Some("dark".to_string()))
@@ -215,8 +215,8 @@ mod tests {
     #[tokio::test]
     async fn test_reset_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let storage = Arc::new(SettingsFileStorage::new(temp_dir.path().to_path_buf()));
-        let service = SettingsService::new(storage);
+        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let service = SettingsService::new(repository);
 
         // 設定を変更
         service

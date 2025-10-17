@@ -7,5 +7,6 @@ pub mod presentation;
 
 // 便利な re-export
 pub use application::services::SettingsService;
-pub use infrastructure::SettingsFileStorage;
+pub use domain::repositories::SettingsRepository;
+pub use infrastructure::repositories::SettingsRepositoryImpl;
 pub use presentation::graphql::{mutations::SettingsMutation, queries::SettingsQuery};
