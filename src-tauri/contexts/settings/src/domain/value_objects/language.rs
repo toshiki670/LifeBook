@@ -22,10 +22,7 @@ impl Language {
         match s.to_lowercase().as_str() {
             "ja" | "japanese" => Ok(Self::Japanese),
             "en" | "english" => Ok(Self::English),
-            _ => Err(format!(
-                "Invalid language: '{}'. Expected 'ja' or 'en'",
-                s
-            )),
+            _ => Err(format!("Invalid language: '{}'. Expected 'ja' or 'en'", s)),
         }
     }
 
@@ -87,4 +84,3 @@ mod tests {
         assert_eq!(Language::default(), Language::Japanese);
     }
 }
-

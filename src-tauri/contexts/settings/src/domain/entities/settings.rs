@@ -6,49 +6,29 @@ use std::path::PathBuf;
 
 /// アプリケーション全体の設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct AppSettings {
     pub general: GeneralSettings,
     pub appearance: AppearanceSettings,
     pub database: DatabaseSettings,
 }
 
-impl Default for AppSettings {
-    fn default() -> Self {
-        Self {
-            general: GeneralSettings::default(),
-            appearance: AppearanceSettings::default(),
-            database: DatabaseSettings::default(),
-        }
-    }
-}
 
 /// 一般設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct GeneralSettings {
     pub language: Language,
 }
 
-impl Default for GeneralSettings {
-    fn default() -> Self {
-        Self {
-            language: Language::default(),
-        }
-    }
-}
 
 /// 表示設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct AppearanceSettings {
     pub theme: Theme,
 }
 
-impl Default for AppearanceSettings {
-    fn default() -> Self {
-        Self {
-            theme: Theme::default(),
-        }
-    }
-}
 
 /// データベース設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -126,4 +106,3 @@ mod tests {
         );
     }
 }
-

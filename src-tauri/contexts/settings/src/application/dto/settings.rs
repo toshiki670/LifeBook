@@ -44,4 +44,3 @@ impl From<DatabaseSettings> for DatabaseSettingsDto {
         }
     }
 }
-

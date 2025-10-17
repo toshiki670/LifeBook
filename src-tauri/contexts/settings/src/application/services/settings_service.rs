@@ -2,7 +2,10 @@
 
 use crate::{
     application::dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
-    domain::{entities::AppSettings, value_objects::{Language, Theme}},
+    domain::{
+        entities::AppSettings,
+        value_objects::{Language, Theme},
+    },
     infrastructure::SettingsFileStorage,
 };
 use anyhow::Result;
@@ -107,8 +110,8 @@ impl SettingsService {
 
         // テーマを更新
         if let Some(theme_str) = theme {
-            let theme = Theme::from_str(&theme_str)
-                .map_err(|e| anyhow::anyhow!("Invalid theme: {}", e))?;
+            let theme =
+                Theme::from_str(&theme_str).map_err(|e| anyhow::anyhow!("Invalid theme: {}", e))?;
             settings.appearance.theme = theme;
         }
 
@@ -128,14 +131,13 @@ impl SettingsService {
             let path = PathBuf::from(dir_str);
 
             // ディレクトリのバリデーション（親ディレクトリが存在するか）
-            if let Some(parent) = path.parent() {
-                if !parent.exists() && parent != std::path::Path::new("") {
+            if let Some(parent) = path.parent()
+                && !parent.exists() && parent != std::path::Path::new("") {
                     return Err(anyhow::anyhow!(
                         "Parent directory does not exist: {}",
                         parent.display()
                     ));
                 }
-            }
 
             settings.database.database_directory = path;
         }
@@ -227,4 +229,3 @@ mod tests {
         assert_eq!(general.language, "ja");
     }
 }
-

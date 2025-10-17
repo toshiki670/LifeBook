@@ -9,4 +9,3 @@ pub mod presentation;
 pub use application::services::SettingsService;
 pub use infrastructure::SettingsFileStorage;
 pub use presentation::graphql::{mutations::SettingsMutation, queries::SettingsQuery};
-

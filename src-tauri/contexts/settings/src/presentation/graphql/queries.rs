@@ -3,4 +3,3 @@
 mod settings;
 
 pub use settings::SettingsQuery;
-

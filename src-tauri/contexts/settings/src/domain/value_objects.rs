@@ -5,4 +5,3 @@ mod theme;
 
 pub use language::Language;
 pub use theme::Theme;
-

@@ -93,7 +93,10 @@ mod tests {
         let storage = SettingsFileStorage::new(temp_dir.path().to_path_buf());
 
         let settings = storage.load().await.unwrap();
-        assert_eq!(settings.general.language, crate::domain::value_objects::Language::Japanese);
+        assert_eq!(
+            settings.general.language,
+            crate::domain::value_objects::Language::Japanese
+        );
     }
 
     #[tokio::test]
@@ -107,7 +110,10 @@ mod tests {
         storage.save(&settings).await.unwrap();
 
         let loaded_settings = storage.load().await.unwrap();
-        assert_eq!(loaded_settings.general.language, crate::domain::value_objects::Language::English);
+        assert_eq!(
+            loaded_settings.general.language,
+            crate::domain::value_objects::Language::English
+        );
     }
 
     #[tokio::test]
@@ -125,4 +131,3 @@ mod tests {
         assert!(!storage.settings_file_path().exists());
     }
 }
-

@@ -73,4 +73,3 @@ mod tests {
         assert_eq!(Theme::default(), Theme::System);
     }
 }
-
