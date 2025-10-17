@@ -5,30 +5,24 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
 /// アプリケーション全体の設定
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppSettings {
     pub general: GeneralSettings,
     pub appearance: AppearanceSettings,
     pub database: DatabaseSettings,
 }
 
-
 /// 一般設定
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct GeneralSettings {
     pub language: Language,
 }
 
-
 /// 表示設定
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct AppearanceSettings {
     pub theme: Theme,
 }
-
 
 /// データベース設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
