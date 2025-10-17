@@ -17,4 +17,3 @@ pub trait SettingsRepository: Send + Sync {
     /// 設定を削除（リセット用）
     async fn delete(&self) -> Result<(), DomainError>;
 }
-

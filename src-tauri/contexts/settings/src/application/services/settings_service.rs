@@ -132,14 +132,13 @@ impl SettingsService {
             let path = PathBuf::from(dir_str);
 
             // ディレクトリのバリデーション（親ディレクトリが存在するか）
-            if let Some(parent) = path.parent() {
-                if !parent.exists() && parent != std::path::Path::new("") {
+            if let Some(parent) = path.parent()
+                && !parent.exists() && parent != std::path::Path::new("") {
                     return Err(DomainError::ValidationError(format!(
                         "Parent directory does not exist: {}",
                         parent.display()
                     )));
                 }
-            }
 
             settings.database.database_directory = path;
         }

@@ -36,13 +36,14 @@ impl SettingsRepository for SettingsRepositoryImpl {
         }
 
         // ファイルを読み込む
-        let content = fs::read_to_string(&file_path)
-            .await
-            .map_err(|e| DomainError::InvalidState(format!("Failed to read settings file: {}", e)))?;
+        let content = fs::read_to_string(&file_path).await.map_err(|e| {
+            DomainError::InvalidState(format!("Failed to read settings file: {}", e))
+        })?;
 
         // JSONをパース
-        let settings: AppSettings = serde_json::from_str(&content)
-            .map_err(|e| DomainError::InvalidState(format!("Failed to parse settings file: {}", e)))?;
+        let settings: AppSettings = serde_json::from_str(&content).map_err(|e| {
+            DomainError::InvalidState(format!("Failed to parse settings file: {}", e))
+        })?;
 
         Ok(settings)
     }
@@ -50,26 +51,22 @@ impl SettingsRepository for SettingsRepositoryImpl {
     async fn save(&self, settings: &AppSettings) -> Result<(), DomainError> {
         // 設定ディレクトリが存在しない場合は作成
         if !self.config_dir.exists() {
-            fs::create_dir_all(&self.config_dir)
-                .await
-                .map_err(|e| {
-                    DomainError::InvalidState(format!(
-                        "Failed to create config directory: {}",
-                        e
-                    ))
-                })?;
+            fs::create_dir_all(&self.config_dir).await.map_err(|e| {
+                DomainError::InvalidState(format!("Failed to create config directory: {}", e))
+            })?;
         }
 
         let file_path = self.settings_file_path();
 
         // 設定をJSONに変換（pretty print）
-        let content = serde_json::to_string_pretty(settings)
-            .map_err(|e| DomainError::InvalidState(format!("Failed to serialize settings: {}", e)))?;
+        let content = serde_json::to_string_pretty(settings).map_err(|e| {
+            DomainError::InvalidState(format!("Failed to serialize settings: {}", e))
+        })?;
 
         // ファイルに書き込む
-        fs::write(&file_path, content)
-            .await
-            .map_err(|e| DomainError::InvalidState(format!("Failed to write settings file: {}", e)))?;
+        fs::write(&file_path, content).await.map_err(|e| {
+            DomainError::InvalidState(format!("Failed to write settings file: {}", e))
+        })?;
 
         Ok(())
     }
@@ -78,14 +75,9 @@ impl SettingsRepository for SettingsRepositoryImpl {
         let file_path = self.settings_file_path();
 
         if file_path.exists() {
-            fs::remove_file(&file_path)
-                .await
-                .map_err(|e| {
-                    DomainError::InvalidState(format!(
-                        "Failed to delete settings file: {}",
-                        e
-                    ))
-                })?;
+            fs::remove_file(&file_path).await.map_err(|e| {
+                DomainError::InvalidState(format!("Failed to delete settings file: {}", e))
+            })?;
         }
 
         Ok(())
@@ -136,4 +128,3 @@ mod tests {
         assert!(!repo.settings_file_path().exists());
     }
 }
-
