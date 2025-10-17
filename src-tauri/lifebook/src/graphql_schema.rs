@@ -5,22 +5,34 @@ use async_graphql::*;
 use library::{BookMutation, BookQuery};
 
 /// クエリのルート
-#[derive(MergedObject, Default)]
-pub struct QueryRoot(BookQuery);
+#[derive(Default)]
+pub struct QueryRoot;
+
+#[Object]
+impl QueryRoot {
+    /// Libraryコンテキストへのアクセス
+    async fn library(&self) -> BookQuery {
+        BookQuery
+    }
+}
 
 /// ミューテーションのルート
-#[derive(MergedObject, Default)]
-pub struct MutationRoot(BookMutation);
+#[derive(Default)]
+pub struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    /// Libraryコンテキストのミューテーション
+    async fn library(&self) -> BookMutation {
+        BookMutation
+    }
+}
 
 pub type AppSchema = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 
 /// GraphQLスキーマを構築
 pub fn build_schema(app_state: AppState) -> AppSchema {
-    Schema::build(
-        QueryRoot::default(),
-        MutationRoot::default(),
-        EmptySubscription,
-    )
-    .data(app_state.book_service)
-    .finish()
+    Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(app_state.book_service)
+        .finish()
 }
