@@ -43,16 +43,22 @@ export async function executeGraphQL<T = unknown>(
 export async function getBooks() {
   const query = `
     query {
-      books {
-        id
-        title
-        author
-        description
-        publishedYear
+      library {
+        books {
+          id
+          title
+          author
+          description
+          publishedYear
+        }
       }
     }
   `
-  return executeGraphQL<{ books: Book[] }>(query)
+  const result = await executeGraphQL<{ library: { books: Book[] } }>(query)
+  return {
+    data: result.data ? { books: result.data.library.books } : undefined,
+    errors: result.errors,
+  }
 }
 
 /**
@@ -61,16 +67,22 @@ export async function getBooks() {
 export async function getBook(id: number) {
   const query = `
     query {
-      book(id: ${id}) {
-        id
-        title
-        author
-        description
-        publishedYear
+      library {
+        book(id: ${id}) {
+          id
+          title
+          author
+          description
+          publishedYear
+        }
       }
     }
   `
-  return executeGraphQL<{ book: Book }>(query)
+  const result = await executeGraphQL<{ library: { book: Book } }>(query)
+  return {
+    data: result.data ? { book: result.data.library.book } : undefined,
+    errors: result.errors,
+  }
 }
 
 /**
@@ -84,17 +96,19 @@ export async function createBook(book: {
 }) {
   const query = `
     mutation CreateBook($title: String!, $author: String, $description: String, $publishedYear: Int) {
-      createBook(
-        title: $title
-        author: $author
-        description: $description
-        publishedYear: $publishedYear
-      ) {
-        id
-        title
-        author
-        description
-        publishedYear
+      library {
+        createBook(
+          title: $title
+          author: $author
+          description: $description
+          publishedYear: $publishedYear
+        ) {
+          id
+          title
+          author
+          description
+          publishedYear
+        }
       }
     }
   `
@@ -105,7 +119,11 @@ export async function createBook(book: {
     publishedYear: book.publishedYear || null,
   }
 
-  return executeGraphQL<{ createBook: Book }>(query, variables)
+  const result = await executeGraphQL<{ library: { createBook: Book } }>(query, variables)
+  return {
+    data: result.data ? { createBook: result.data.library.createBook } : undefined,
+    errors: result.errors,
+  }
 }
 
 /**
@@ -122,18 +140,20 @@ export async function updateBook(
 ) {
   const query = `
     mutation UpdateBook($id: Int!, $title: String, $author: String, $description: String, $publishedYear: Int) {
-      updateBook(
-        id: $id
-        title: $title
-        author: $author
-        description: $description
-        publishedYear: $publishedYear
-      ) {
-        id
-        title
-        author
-        description
-        publishedYear
+      library {
+        updateBook(
+          id: $id
+          title: $title
+          author: $author
+          description: $description
+          publishedYear: $publishedYear
+        ) {
+          id
+          title
+          author
+          description
+          publishedYear
+        }
       }
     }
   `
@@ -145,7 +165,11 @@ export async function updateBook(
     publishedYear: updates.publishedYear || null,
   }
 
-  return executeGraphQL<{ updateBook: Book }>(query, variables)
+  const result = await executeGraphQL<{ library: { updateBook: Book } }>(query, variables)
+  return {
+    data: result.data ? { updateBook: result.data.library.updateBook } : undefined,
+    errors: result.errors,
+  }
 }
 
 /**
@@ -154,12 +178,18 @@ export async function updateBook(
 export async function deleteBook(id: number) {
   const query = `
     mutation DeleteBook($id: Int!) {
-      deleteBook(id: $id)
+      library {
+        deleteBook(id: $id)
+      }
     }
   `
   const variables = { id }
 
-  return executeGraphQL<{ deleteBook: boolean }>(query, variables)
+  const result = await executeGraphQL<{ library: { deleteBook: boolean } }>(query, variables)
+  return {
+    data: result.data ? { deleteBook: result.data.library.deleteBook } : undefined,
+    errors: result.errors,
+  }
 }
 
 /**
