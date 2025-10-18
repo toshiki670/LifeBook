@@ -100,10 +100,8 @@ mod tests {
     async fn test_load_nonexistent_file() {
         let temp_dir = TempDir::new().unwrap();
         let default_db_dir = temp_dir.path().join("databases");
-        let repo = SettingsRepositoryImpl::new(
-            temp_dir.path().to_path_buf(),
-            default_db_dir.clone(),
-        );
+        let repo =
+            SettingsRepositoryImpl::new(temp_dir.path().to_path_buf(), default_db_dir.clone());
 
         let settings = repo.load().await.unwrap();
         assert_eq!(settings.general.language, Language::Japanese);
