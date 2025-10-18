@@ -5,21 +5,13 @@ use serde::{Deserialize, Serialize};
 
 /// アプリケーション全体の設定
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct Settings {
     pub general: GeneralSettings,
     pub appearance: AppearanceSettings,
     pub database: DatabaseSettings,
 }
 
-impl Default for Settings {
-    fn default() -> Self {
-        Self {
-            general: GeneralSettings::default(),
-            appearance: AppearanceSettings::default(),
-            database: DatabaseSettings::default(),
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {

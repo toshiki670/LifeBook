@@ -8,4 +8,3 @@ use serde::{Deserialize, Serialize};
 pub struct GeneralSettings {
     pub language: Language,
 }
-

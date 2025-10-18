@@ -38,4 +38,3 @@ where
     let s = String::deserialize(deserializer)?;
     Ok(PathBuf::from(s))
 }
-
