@@ -16,4 +16,3 @@ impl From<AppearanceSettings> for AppearanceSettingsDto {
         }
     }
 }
-
