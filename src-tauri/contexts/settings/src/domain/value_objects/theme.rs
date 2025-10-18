@@ -1,33 +1,18 @@
 // Settings Domain Layer - Theme Value Object
 
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
+use strum::{AsRefStr, Display, EnumString};
 
 /// テーマのValue Object
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
+)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
 pub enum Theme {
-    #[serde(rename = "light")]
     Light,
-    #[serde(rename = "dark")]
     Dark,
-    #[serde(rename = "system")]
     System,
-}
-
-impl FromStr for Theme {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "light" => Ok(Self::Light),
-            "dark" => Ok(Self::Dark),
-            "system" => Ok(Self::System),
-            _ => Err(format!(
-                "Invalid theme: '{}'. Expected 'light', 'dark', or 'system'",
-                s
-            )),
-        }
-    }
 }
 
 impl Theme {
@@ -50,6 +35,7 @@ impl Default for Theme {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_theme_from_str() {

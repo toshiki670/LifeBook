@@ -4510,6 +4510,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shared",
+ "strum",
  "tempfile",
  "tokio",
 ]

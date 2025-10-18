@@ -1,32 +1,28 @@
 // Settings Domain Layer - Language Value Object
 
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
+use strum::{AsRefStr, Display, EnumString};
 
 /// 言語のValue Object
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
+)]
+#[serde(rename_all = "lowercase")]
+#[strum(ascii_case_insensitive)]
 pub enum Language {
     #[serde(rename = "ja")]
+    #[strum(serialize = "ja", serialize = "japanese")]
     Japanese,
     #[serde(rename = "en")]
+    #[strum(serialize = "en", serialize = "english")]
     English,
     // 将来的に追加可能
     // #[serde(rename = "zh")]
+    // #[strum(serialize = "zh", serialize = "chinese")]
     // Chinese,
     // #[serde(rename = "ko")]
+    // #[strum(serialize = "ko", serialize = "korean")]
     // Korean,
-}
-
-impl FromStr for Language {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s.to_lowercase().as_str() {
-            "ja" | "japanese" => Ok(Self::Japanese),
-            "en" | "english" => Ok(Self::English),
-            _ => Err(format!("Invalid language: '{}'. Expected 'ja' or 'en'", s)),
-        }
-    }
 }
 
 impl Language {
@@ -56,6 +52,7 @@ impl Default for Language {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_language_from_str() {
