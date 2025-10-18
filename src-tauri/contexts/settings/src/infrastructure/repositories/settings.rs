@@ -1,6 +1,6 @@
 // Settings Infrastructure Layer - Settings Repository Implementation
 
-use crate::domain::{entities::AppSettings, repositories::SettingsRepository};
+use crate::domain::{entities::Settings, repositories::SettingsRepository};
 use async_trait::async_trait;
 use shared::domain::errors::DomainError;
 use std::path::PathBuf;
@@ -31,12 +31,12 @@ impl SettingsRepositoryImpl {
 
 #[async_trait]
 impl SettingsRepository for SettingsRepositoryImpl {
-    async fn load(&self) -> Result<AppSettings, DomainError> {
+    async fn load(&self) -> Result<Settings, DomainError> {
         let file_path = self.settings_file_path();
 
         // ファイルが存在しない場合はデフォルト設定を返す（デフォルトDBディレクトリを注入）
         if !file_path.exists() {
-            let mut settings = AppSettings::default();
+            let mut settings = Settings::default();
             settings.database.database_directory = self.default_db_dir.clone();
             return Ok(settings);
         }
@@ -47,14 +47,14 @@ impl SettingsRepository for SettingsRepositoryImpl {
         })?;
 
         // JSONをパース
-        let settings: AppSettings = serde_json::from_str(&content).map_err(|e| {
+        let settings: Settings = serde_json::from_str(&content).map_err(|e| {
             DomainError::InvalidState(format!("Failed to parse settings file: {}", e))
         })?;
 
         Ok(settings)
     }
 
-    async fn save(&self, settings: &AppSettings) -> Result<(), DomainError> {
+    async fn save(&self, settings: &Settings) -> Result<(), DomainError> {
         // 設定ディレクトリが存在しない場合は作成
         if !self.config_dir.exists() {
             fs::create_dir_all(&self.config_dir).await.map_err(|e| {
@@ -114,7 +114,7 @@ mod tests {
         let default_db_dir = temp_dir.path().join("databases");
         let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf(), default_db_dir);
 
-        let mut settings = AppSettings::default();
+        let mut settings = Settings::default();
         settings.general.language = Language::English;
 
         repo.save(&settings).await.unwrap();
@@ -129,7 +129,7 @@ mod tests {
         let default_db_dir = temp_dir.path().join("databases");
         let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf(), default_db_dir);
 
-        let settings = AppSettings::default();
+        let settings = Settings::default();
         repo.save(&settings).await.unwrap();
 
         assert!(repo.settings_file_path().exists());

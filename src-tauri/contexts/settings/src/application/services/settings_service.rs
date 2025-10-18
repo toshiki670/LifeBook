@@ -3,7 +3,7 @@
 use crate::{
     application::dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
     domain::{
-        entities::AppSettings,
+        entities::Settings,
         repositories::SettingsRepository,
         value_objects::{Language, Theme},
     },
@@ -18,7 +18,7 @@ use tokio::sync::RwLock;
 pub struct SettingsService {
     repository: Arc<dyn SettingsRepository>,
     // メモリキャッシュ（頻繁な読み込みを避けるため）
-    cache: Arc<RwLock<Option<AppSettings>>>,
+    cache: Arc<RwLock<Option<Settings>>>,
 }
 
 impl SettingsService {
@@ -31,7 +31,7 @@ impl SettingsService {
     }
 
     /// 設定を読み込む（キャッシュを使用）
-    async fn load_settings(&self) -> Result<AppSettings, DomainError> {
+    async fn load_settings(&self) -> Result<Settings, DomainError> {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
@@ -53,7 +53,7 @@ impl SettingsService {
     }
 
     /// 設定を保存（キャッシュも更新）
-    async fn save_settings(&self, settings: &AppSettings) -> Result<(), DomainError> {
+    async fn save_settings(&self, settings: &Settings) -> Result<(), DomainError> {
         // リポジトリに保存
         self.repository.save(settings).await?;
 
