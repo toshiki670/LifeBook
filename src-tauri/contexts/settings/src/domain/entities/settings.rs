@@ -37,8 +37,8 @@ pub struct DatabaseSettings {
 impl Default for DatabaseSettings {
     fn default() -> Self {
         Self {
-            // デフォルトは相対パス（将来的にドキュメントディレクトリ等に変更予定）
-            database_directory: PathBuf::from("./data"),
+            // プレースホルダー。実際のデフォルト値はRepositoryから注入される
+            database_directory: PathBuf::new(),
         }
     }
 }
@@ -69,10 +69,7 @@ mod tests {
         let settings = AppSettings::default();
         assert_eq!(settings.general.language, Language::Japanese);
         assert_eq!(settings.appearance.theme, Theme::System);
-        assert_eq!(
-            settings.database.database_directory,
-            PathBuf::from("./data")
-        );
+        assert_eq!(settings.database.database_directory, PathBuf::new());
     }
 
     #[test]
@@ -81,7 +78,7 @@ mod tests {
         let json = serde_json::to_string(&settings).unwrap();
         assert!(json.contains("\"language\":\"ja\""));
         assert!(json.contains("\"theme\":\"system\""));
-        assert!(json.contains("\"database_directory\":\"./data\""));
+        assert!(json.contains("\"database_directory\":\"\""));
     }
 
     #[test]

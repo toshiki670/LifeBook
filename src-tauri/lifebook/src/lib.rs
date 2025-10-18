@@ -23,8 +23,15 @@ pub fn run() {
                 .app_config_dir()
                 .map_err(|e| format!("Failed to get config directory: {}", e))?;
 
+            // デフォルトのデータベースディレクトリを取得
+            let local_data_dir = app
+                .path()
+                .app_local_data_dir()
+                .map_err(|e| format!("Failed to get local data directory: {}", e))?;
+            let default_db_dir = local_data_dir.join("databases");
+
             // アプリケーションステートを初期化
-            let app_state = AppState::new(db, config_dir);
+            let app_state = AppState::new(db, config_dir, default_db_dir);
 
             // GraphQLスキーマを構築
             let schema = build_schema(app_state);

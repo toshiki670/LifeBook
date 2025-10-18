@@ -173,7 +173,11 @@ mod tests {
     #[tokio::test]
     async fn test_get_default_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
         let service = SettingsService::new(repository);
 
         let general = service.get_general_settings().await.unwrap();
@@ -186,7 +190,11 @@ mod tests {
     #[tokio::test]
     async fn test_update_general_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
         let service = SettingsService::new(repository);
 
         let updated = service
@@ -203,7 +211,11 @@ mod tests {
     #[tokio::test]
     async fn test_update_appearance_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
         let service = SettingsService::new(repository);
 
         let updated = service
@@ -216,7 +228,11 @@ mod tests {
     #[tokio::test]
     async fn test_reset_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let repository = Arc::new(SettingsRepositoryImpl::new(temp_dir.path().to_path_buf()));
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
         let service = SettingsService::new(repository);
 
         // 設定を変更

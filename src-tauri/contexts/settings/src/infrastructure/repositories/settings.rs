@@ -11,12 +11,16 @@ const SETTINGS_FILE_NAME: &str = "settings.json";
 /// ファイルシステムベースの設定リポジトリ実装
 pub struct SettingsRepositoryImpl {
     config_dir: PathBuf,
+    default_db_dir: PathBuf,
 }
 
 impl SettingsRepositoryImpl {
     /// 新しいリポジトリインスタンスを作成
-    pub fn new(config_dir: PathBuf) -> Self {
-        Self { config_dir }
+    pub fn new(config_dir: PathBuf, default_db_dir: PathBuf) -> Self {
+        Self {
+            config_dir,
+            default_db_dir,
+        }
     }
 
     /// 設定ファイルのパスを取得
@@ -30,9 +34,11 @@ impl SettingsRepository for SettingsRepositoryImpl {
     async fn load(&self) -> Result<AppSettings, DomainError> {
         let file_path = self.settings_file_path();
 
-        // ファイルが存在しない場合はデフォルト設定を返す
+        // ファイルが存在しない場合はデフォルト設定を返す（デフォルトDBディレクトリを注入）
         if !file_path.exists() {
-            return Ok(AppSettings::default());
+            let mut settings = AppSettings::default();
+            settings.database.database_directory = self.default_db_dir.clone();
+            return Ok(settings);
         }
 
         // ファイルを読み込む
@@ -93,16 +99,22 @@ mod tests {
     #[tokio::test]
     async fn test_load_nonexistent_file() {
         let temp_dir = TempDir::new().unwrap();
-        let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf());
+        let default_db_dir = temp_dir.path().join("databases");
+        let repo = SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir.clone(),
+        );
 
         let settings = repo.load().await.unwrap();
         assert_eq!(settings.general.language, Language::Japanese);
+        assert_eq!(settings.database.database_directory, default_db_dir);
     }
 
     #[tokio::test]
     async fn test_save_and_load() {
         let temp_dir = TempDir::new().unwrap();
-        let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf());
+        let default_db_dir = temp_dir.path().join("databases");
+        let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf(), default_db_dir);
 
         let mut settings = AppSettings::default();
         settings.general.language = Language::English;
@@ -116,7 +128,8 @@ mod tests {
     #[tokio::test]
     async fn test_delete() {
         let temp_dir = TempDir::new().unwrap();
-        let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf());
+        let default_db_dir = temp_dir.path().join("databases");
+        let repo = SettingsRepositoryImpl::new(temp_dir.path().to_path_buf(), default_db_dir);
 
         let settings = AppSettings::default();
         repo.save(&settings).await.unwrap();
