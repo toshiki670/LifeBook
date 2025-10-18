@@ -8,16 +8,20 @@ use strum::{AsRefStr, Display, EnumString};
     Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
 )]
 #[serde(rename_all = "lowercase")]
-#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
+#[strum(ascii_case_insensitive)]
 pub enum Language {
-    #[strum(serialize = "ja", serialize = "japanese")]
+    #[serde(rename = "ja")]
+    #[strum(serialize = "ja")]
     Japanese,
-    #[strum(serialize = "en", serialize = "english")]
+    #[serde(rename = "en")]
+    #[strum(serialize = "en")]
     English,
     // 将来的に追加可能
-    // #[strum(serialize = "zh", serialize = "chinese")]
+    // #[serde(rename = "zh")]
+    // #[strum(serialize = "zh")]
     // Chinese,
-    // #[strum(serialize = "ko", serialize = "korean")]
+    // #[serde(rename = "ko")]
+    // #[strum(serialize = "ko")]
     // Korean,
 }
 
@@ -36,21 +40,23 @@ mod tests {
     fn test_language_from_str() {
         assert_eq!(Language::from_str("ja").unwrap(), Language::Japanese);
         assert_eq!(Language::from_str("en").unwrap(), Language::English);
-        assert_eq!(Language::from_str("japanese").unwrap(), Language::Japanese);
-        assert_eq!(Language::from_str("ENGLISH").unwrap(), Language::English);
+        assert_eq!(Language::from_str("JA").unwrap(), Language::Japanese); // 大文字小文字を区別しない
+        assert_eq!(Language::from_str("EN").unwrap(), Language::English);
     }
 
     #[test]
     fn test_language_from_str_invalid() {
         assert!(Language::from_str("fr").is_err());
         assert!(Language::from_str("").is_err());
+        assert!(Language::from_str("japanese").is_err()); // 長い形式は受け付けない
+        assert!(Language::from_str("english").is_err());
     }
 
     #[test]
     fn test_language_as_ref() {
-        // AsRefStr は variant名の小文字を返す
-        assert_eq!(Language::Japanese.as_ref(), "japanese");
-        assert_eq!(Language::English.as_ref(), "english");
+        // AsRefStr は serialize 値を返す
+        assert_eq!(Language::Japanese.as_ref(), "ja");
+        assert_eq!(Language::English.as_ref(), "en");
     }
 
     #[test]

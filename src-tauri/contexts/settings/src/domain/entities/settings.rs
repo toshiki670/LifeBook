@@ -79,7 +79,7 @@ mod tests {
     fn test_settings_serialization() {
         let settings = AppSettings::default();
         let json = serde_json::to_string(&settings).unwrap();
-        assert!(json.contains("\"language\":\"japanese\""));
+        assert!(json.contains("\"language\":\"ja\""));
         assert!(json.contains("\"theme\":\"system\""));
         assert!(json.contains("\"database_directory\":\"./data\""));
     }
@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn test_settings_deserialization() {
         let json = r#"{
-            "general": {"language": "english"},
+            "general": {"language": "en"},
             "appearance": {"theme": "dark"},
             "database": {"database_directory": "/custom/path"}
         }"#;
