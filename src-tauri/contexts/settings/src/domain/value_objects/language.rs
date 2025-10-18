@@ -21,16 +21,6 @@ pub enum Language {
     // Korean,
 }
 
-impl Language {
-    /// Languageを表示名に変換
-    pub fn display_name(&self) -> &'static str {
-        match self {
-            Self::Japanese => "日本語",
-            Self::English => "English",
-        }
-    }
-}
-
 impl Default for Language {
     fn default() -> Self {
         Self::Japanese
@@ -61,12 +51,6 @@ mod tests {
         // AsRefStr は variant名の小文字を返す
         assert_eq!(Language::Japanese.as_ref(), "japanese");
         assert_eq!(Language::English.as_ref(), "english");
-    }
-
-    #[test]
-    fn test_language_display_name() {
-        assert_eq!(Language::Japanese.display_name(), "日本語");
-        assert_eq!(Language::English.display_name(), "English");
     }
 
     #[test]
