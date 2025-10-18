@@ -37,7 +37,7 @@ pub struct DatabaseSettings {
 impl Default for DatabaseSettings {
     fn default() -> Self {
         Self {
-            // デフォルトは相対パス（実際の実装では app_local_data_dir を使う）
+            // デフォルトは相対パス（将来的にドキュメントディレクトリ等に変更予定）
             database_directory: PathBuf::from("./data"),
         }
     }
