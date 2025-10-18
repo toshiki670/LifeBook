@@ -1,7 +1,7 @@
 [package]
 name = "library"
 version = "0.1.0"
-edition = "2024"
+edition.workspace = true
 publish = false
 
 [lib]
@@ -11,8 +11,11 @@ path = "src/lib.rs"
 [dependencies]
 shared = { path = "../shared" }
 entity = { path = "../../entity" }
-async-graphql = "7"
-async-trait = "0.1"
-chrono = "0.4"
-sea-orm = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros"] }
-
+async-graphql = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+sea-orm = { workspace = true, features = [
+  "sqlx-sqlite",
+  "runtime-tokio-rustls",
+  "macros",
+] }
