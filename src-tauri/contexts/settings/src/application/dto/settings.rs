@@ -12,7 +12,7 @@ pub struct GeneralSettingsDto {
 impl From<GeneralSettings> for GeneralSettingsDto {
     fn from(settings: GeneralSettings) -> Self {
         Self {
-            language: settings.language.as_str().to_string(),
+            language: settings.language.to_string(),
         }
     }
 }
@@ -26,7 +26,7 @@ pub struct AppearanceSettingsDto {
 impl From<AppearanceSettings> for AppearanceSettingsDto {
     fn from(settings: AppearanceSettings) -> Self {
         Self {
-            theme: settings.theme.as_str().to_string(),
+            theme: settings.theme.to_string(),
         }
     }
 }

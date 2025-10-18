@@ -15,17 +15,6 @@ pub enum Theme {
     System,
 }
 
-impl Theme {
-    /// Themeを文字列に変換
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Light => "light",
-            Self::Dark => "dark",
-            Self::System => "system",
-        }
-    }
-}
-
 impl Default for Theme {
     fn default() -> Self {
         Self::System
@@ -52,10 +41,11 @@ mod tests {
     }
 
     #[test]
-    fn test_theme_as_str() {
-        assert_eq!(Theme::Light.as_str(), "light");
-        assert_eq!(Theme::Dark.as_str(), "dark");
-        assert_eq!(Theme::System.as_str(), "system");
+    fn test_theme_as_ref() {
+        // AsRefStr は serialize 値を返す
+        assert_eq!(Theme::Light.as_ref(), "light");
+        assert_eq!(Theme::Dark.as_ref(), "dark");
+        assert_eq!(Theme::System.as_ref(), "system");
     }
 
     #[test]

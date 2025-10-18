@@ -8,32 +8,20 @@ use strum::{AsRefStr, Display, EnumString};
     Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
 )]
 #[serde(rename_all = "lowercase")]
-#[strum(ascii_case_insensitive)]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
 pub enum Language {
-    #[serde(rename = "ja")]
     #[strum(serialize = "ja", serialize = "japanese")]
     Japanese,
-    #[serde(rename = "en")]
     #[strum(serialize = "en", serialize = "english")]
     English,
     // 将来的に追加可能
-    // #[serde(rename = "zh")]
     // #[strum(serialize = "zh", serialize = "chinese")]
     // Chinese,
-    // #[serde(rename = "ko")]
     // #[strum(serialize = "ko", serialize = "korean")]
     // Korean,
 }
 
 impl Language {
-    /// Languageを文字列コードに変換
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Japanese => "ja",
-            Self::English => "en",
-        }
-    }
-
     /// Languageを表示名に変換
     pub fn display_name(&self) -> &'static str {
         match self {
@@ -69,9 +57,10 @@ mod tests {
     }
 
     #[test]
-    fn test_language_as_str() {
-        assert_eq!(Language::Japanese.as_str(), "ja");
-        assert_eq!(Language::English.as_str(), "en");
+    fn test_language_as_ref() {
+        // AsRefStr は variant名の小文字を返す
+        assert_eq!(Language::Japanese.as_ref(), "japanese");
+        assert_eq!(Language::English.as_ref(), "english");
     }
 
     #[test]

@@ -177,7 +177,7 @@ mod tests {
         let service = SettingsService::new(repository);
 
         let general = service.get_general_settings().await.unwrap();
-        assert_eq!(general.language, "ja");
+        assert_eq!(general.language, "japanese");
 
         let appearance = service.get_appearance_settings().await.unwrap();
         assert_eq!(appearance.theme, "system");
@@ -193,11 +193,11 @@ mod tests {
             .update_general_settings(Some("en".to_string()))
             .await
             .unwrap();
-        assert_eq!(updated.language, "en");
+        assert_eq!(updated.language, "english");
 
         // 再取得して確認
         let general = service.get_general_settings().await.unwrap();
-        assert_eq!(general.language, "en");
+        assert_eq!(general.language, "english");
     }
 
     #[tokio::test]
@@ -230,6 +230,6 @@ mod tests {
 
         // デフォルトに戻っているか確認
         let general = service.get_general_settings().await.unwrap();
-        assert_eq!(general.language, "ja");
+        assert_eq!(general.language, "japanese");
     }
 }
