@@ -4,14 +4,12 @@ use super::{AppearanceSettings, DatabaseSettings, GeneralSettings};
 use serde::{Deserialize, Serialize};
 
 /// アプリケーション全体の設定
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[derive(Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Settings {
     pub general: GeneralSettings,
     pub appearance: AppearanceSettings,
     pub database: DatabaseSettings,
 }
-
 
 #[cfg(test)]
 mod tests {
