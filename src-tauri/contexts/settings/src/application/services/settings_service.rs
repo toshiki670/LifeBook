@@ -1,14 +1,16 @@
 // Settings Application Layer - Settings Service
 
 use crate::{
-    application::dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
+    application::{
+        dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
+        errors::SettingsError,
+    },
     domain::{
         entities::Settings,
         repositories::SettingsRepository,
         value_objects::{Language, Theme},
     },
 };
-use shared::domain::errors::DomainError;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -31,7 +33,7 @@ impl SettingsService {
     }
 
     /// 設定を読み込む（キャッシュを使用）
-    async fn load_settings(&self) -> Result<Settings, DomainError> {
+    async fn load_settings(&self) -> Result<Settings, SettingsError> {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
@@ -53,7 +55,7 @@ impl SettingsService {
     }
 
     /// 設定を保存（キャッシュも更新）
-    async fn save_settings(&self, settings: &Settings) -> Result<(), DomainError> {
+    async fn save_settings(&self, settings: &Settings) -> Result<(), SettingsError> {
         // リポジトリに保存
         self.repository.save(settings).await?;
 
@@ -67,19 +69,19 @@ impl SettingsService {
     }
 
     /// 一般設定を取得
-    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto, DomainError> {
+    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto, SettingsError> {
         let settings = self.load_settings().await?;
         Ok(settings.general.into())
     }
 
     /// 表示設定を取得
-    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto, DomainError> {
+    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto, SettingsError> {
         let settings = self.load_settings().await?;
         Ok(settings.appearance.into())
     }
 
     /// データベース設定を取得
-    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto, DomainError> {
+    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto, SettingsError> {
         let settings = self.load_settings().await?;
         Ok(settings.database.into())
     }
@@ -88,13 +90,13 @@ impl SettingsService {
     pub async fn update_general_settings(
         &self,
         language: Option<String>,
-    ) -> Result<GeneralSettingsDto, DomainError> {
+    ) -> Result<GeneralSettingsDto, SettingsError> {
         let mut settings = self.load_settings().await?;
 
         // 言語を更新
         if let Some(lang_str) = language {
             let language = Language::from_str(&lang_str)
-                .map_err(|e| DomainError::ValidationError(format!("Invalid language: {}", e)))?;
+                .map_err(|e| SettingsError::InvalidLanguage(e.to_string()))?;
             settings.general.language = language;
         }
 
@@ -106,13 +108,13 @@ impl SettingsService {
     pub async fn update_appearance_settings(
         &self,
         theme: Option<String>,
-    ) -> Result<AppearanceSettingsDto, DomainError> {
+    ) -> Result<AppearanceSettingsDto, SettingsError> {
         let mut settings = self.load_settings().await?;
 
         // テーマを更新
         if let Some(theme_str) = theme {
             let theme = Theme::from_str(&theme_str)
-                .map_err(|e| DomainError::ValidationError(format!("Invalid theme: {}", e)))?;
+                .map_err(|e| SettingsError::InvalidTheme(e.to_string()))?;
             settings.appearance.theme = theme;
         }
 
@@ -124,7 +126,7 @@ impl SettingsService {
     pub async fn update_database_settings(
         &self,
         database_directory: Option<String>,
-    ) -> Result<DatabaseSettingsDto, DomainError> {
+    ) -> Result<DatabaseSettingsDto, SettingsError> {
         let mut settings = self.load_settings().await?;
 
         // データベースディレクトリを更新
@@ -136,7 +138,7 @@ impl SettingsService {
                 && !parent.exists()
                 && parent != std::path::Path::new("")
             {
-                return Err(DomainError::ValidationError(format!(
+                return Err(SettingsError::InvalidDatabaseDirectory(format!(
                     "Parent directory does not exist: {}",
                     parent.display()
                 )));
@@ -150,7 +152,7 @@ impl SettingsService {
     }
 
     /// すべての設定をリセット
-    pub async fn reset_all_settings(&self) -> Result<(), DomainError> {
+    pub async fn reset_all_settings(&self) -> Result<(), SettingsError> {
         // 設定ファイルを削除
         self.repository.delete().await?;
 
