@@ -9,7 +9,6 @@ name = "settings"
 path = "src/lib.rs"
 
 [dependencies]
-shared = { path = "../shared" }
 async-graphql = { workspace = true }
 async-trait = { workspace = true }
 serde = { workspace = true, features = ["derive"] }

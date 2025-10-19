@@ -1,6 +1,6 @@
 // Settings Application Layer - Error Types
 
-use shared::domain::errors::DomainError;
+use crate::domain::errors::SettingsDomainError;
 use thiserror::Error;
 
 /// Settings コンテキスト専用のエラー型
@@ -15,9 +15,6 @@ pub enum SettingsError {
     #[error("Invalid database directory: {0}")]
     InvalidDatabaseDirectory(String),
 
-    #[error("Failed to parse settings file: {0}")]
-    ParseError(#[from] serde_json::Error),
-
-    #[error("Repository error: {0}")]
-    Repository(#[from] DomainError),
+    #[error("Domain error: {0}")]
+    Domain(#[from] SettingsDomainError),
 }

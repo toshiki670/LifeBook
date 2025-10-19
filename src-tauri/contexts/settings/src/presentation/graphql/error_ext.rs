@@ -15,14 +15,9 @@ pub fn to_graphql_error(e: SettingsError) -> Error {
         SettingsError::InvalidDatabaseDirectory(msg) => Error::new(msg).extend_with(|_, ext| {
             ext.set("code", "INVALID_DATABASE_DIRECTORY");
         }),
-        SettingsError::ParseError(e) => {
-            Error::new(format!("Parse error: {}", e)).extend_with(|_, ext| {
-                ext.set("code", "PARSE_ERROR");
-            })
-        }
-        SettingsError::Repository(e) => {
-            Error::new(format!("Repository error: {}", e)).extend_with(|_, ext| {
-                ext.set("code", "REPOSITORY_ERROR");
+        SettingsError::Domain(e) => {
+            Error::new(format!("Domain error: {}", e)).extend_with(|_, ext| {
+                ext.set("code", "DOMAIN_ERROR");
             })
         }
     }
