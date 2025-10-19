@@ -5,10 +5,9 @@ pub mod domain;
 pub mod infrastructure;
 pub mod presentation;
 
-// 便利な re-export
-pub use application::errors::SettingsError;
-pub use application::services::SettingsService;
-pub use domain::errors::SettingsDomainError;
-pub use domain::repositories::SettingsRepository;
-pub use infrastructure::repositories::SettingsRepositoryImpl;
+// Public API - Presentation層のみ公開
 pub use presentation::graphql::{mutations::SettingsMutation, queries::SettingsQuery};
+pub use presentation::integration::build_settings_service;
+
+// Type exports for type annotations (opaque to external users)
+pub use application::services::SettingsService;
