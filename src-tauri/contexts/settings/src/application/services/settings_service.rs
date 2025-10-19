@@ -131,17 +131,30 @@ impl SettingsService {
 
         // データベースディレクトリを更新
         if let Some(dir_str) = database_directory {
+            // 空文字列チェック
+            if dir_str.trim().is_empty() {
+                return Err(SettingsError::InvalidDatabaseDirectory(
+                    "Database directory cannot be empty".to_string(),
+                ));
+            }
+
             let path = PathBuf::from(dir_str);
 
-            // ディレクトリのバリデーション（親ディレクトリが存在するか）
-            if let Some(parent) = path.parent()
-                && !parent.exists()
-                && parent != std::path::Path::new("")
-            {
-                return Err(SettingsError::InvalidDatabaseDirectory(format!(
-                    "Parent directory does not exist: {}",
-                    parent.display()
-                )));
+            // 絶対パスチェック
+            if !path.is_absolute() {
+                return Err(SettingsError::InvalidDatabaseDirectory(
+                    "Database directory must be an absolute path".to_string(),
+                ));
+            }
+
+            // 親ディレクトリの存在チェック
+            if let Some(parent) = path.parent() {
+                if !parent.exists() && parent != std::path::Path::new("") {
+                    return Err(SettingsError::InvalidDatabaseDirectory(format!(
+                        "Parent directory does not exist: {}",
+                        parent.display()
+                    )));
+                }
             }
 
             settings.database.database_directory = path;

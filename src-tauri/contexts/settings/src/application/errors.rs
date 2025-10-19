@@ -21,10 +21,3 @@ pub enum SettingsError {
     #[error("Repository error: {0}")]
     Repository(#[from] DomainError),
 }
-
-// strumのParseErrorからの変換
-impl From<strum::ParseError> for SettingsError {
-    fn from(e: strum::ParseError) -> Self {
-        SettingsError::InvalidLanguage(e.to_string())
-    }
-}

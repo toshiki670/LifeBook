@@ -1,8 +1,11 @@
 // Presentation Layer - Settings GraphQL Query
 
-use crate::application::{
-    dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
-    services::SettingsService,
+use crate::{
+    application::{
+        dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
+        services::SettingsService,
+    },
+    presentation::graphql::to_graphql_error,
 };
 use async_graphql::*;
 use std::sync::Arc;
@@ -21,7 +24,7 @@ impl SettingsQuery {
         settings_service
             .get_general_settings()
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// 表示設定を取得
@@ -33,7 +36,7 @@ impl SettingsQuery {
         settings_service
             .get_appearance_settings()
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// データベース設定を取得
@@ -45,6 +48,6 @@ impl SettingsQuery {
         settings_service
             .get_database_settings()
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 }

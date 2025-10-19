@@ -12,4 +12,10 @@ pub enum DomainError {
 
     #[error("Invalid state: {0}")]
     InvalidState(String),
+
+    #[error("I/O error: {0}")]
+    IoError(String),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(String),
 }

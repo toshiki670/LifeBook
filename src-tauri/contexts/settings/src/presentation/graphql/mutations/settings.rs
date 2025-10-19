@@ -1,8 +1,11 @@
 // Presentation Layer - Settings GraphQL Mutation
 
-use crate::application::{
-    dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
-    services::SettingsService,
+use crate::{
+    application::{
+        dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
+        services::SettingsService,
+    },
+    presentation::graphql::to_graphql_error,
 };
 use async_graphql::*;
 use std::sync::Arc;
@@ -25,7 +28,7 @@ impl SettingsMutation {
         settings_service
             .update_general_settings(language)
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// 表示設定を更新
@@ -41,7 +44,7 @@ impl SettingsMutation {
         settings_service
             .update_appearance_settings(theme)
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// データベース設定を更新
@@ -57,7 +60,7 @@ impl SettingsMutation {
         settings_service
             .update_database_settings(database_directory)
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// すべての設定をリセット
@@ -69,7 +72,7 @@ impl SettingsMutation {
         settings_service
             .reset_all_settings()
             .await
-            .map_err(|e| Error::new(e.to_string()))?;
+            .map_err(to_graphql_error)?;
 
         Ok(true)
     }
