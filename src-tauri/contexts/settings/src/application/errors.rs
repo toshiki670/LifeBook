@@ -1,11 +1,11 @@
 // Settings Application Layer - Error Types
 
-use crate::domain::errors::SettingsDomainError;
+use crate::domain::errors::DomainError;
 use thiserror::Error;
 
 /// Settings コンテキスト専用のエラー型
 #[derive(Error, Debug)]
-pub enum SettingsError {
+pub enum ApplicationError {
     #[error("Invalid language code: {0}")]
     InvalidLanguage(String),
 
@@ -16,5 +16,5 @@ pub enum SettingsError {
     InvalidDatabaseDirectory(String),
 
     #[error("Domain error: {0}")]
-    Domain(#[from] SettingsDomainError),
+    Domain(#[from] DomainError),
 }

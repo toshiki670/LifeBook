@@ -3,7 +3,7 @@
 use crate::{
     application::{
         dto::{AppearanceSettingsDto, DatabaseSettingsDto, GeneralSettingsDto},
-        errors::SettingsError,
+        errors::ApplicationError,
     },
     domain::{
         entities::Settings,
@@ -33,7 +33,7 @@ impl SettingsService {
     }
 
     /// 設定を読み込む（キャッシュを使用）
-    async fn load_settings(&self) -> Result<Settings, SettingsError> {
+    async fn load_settings(&self) -> Result<Settings, ApplicationError> {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
@@ -55,7 +55,7 @@ impl SettingsService {
     }
 
     /// 設定を保存（キャッシュも更新）
-    async fn save_settings(&self, settings: &Settings) -> Result<(), SettingsError> {
+    async fn save_settings(&self, settings: &Settings) -> Result<(), ApplicationError> {
         // リポジトリに保存
         self.repository.save(settings).await?;
 
@@ -69,19 +69,19 @@ impl SettingsService {
     }
 
     /// 一般設定を取得
-    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto, SettingsError> {
+    pub async fn get_general_settings(&self) -> Result<GeneralSettingsDto, ApplicationError> {
         let settings = self.load_settings().await?;
         Ok(settings.general.into())
     }
 
     /// 表示設定を取得
-    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto, SettingsError> {
+    pub async fn get_appearance_settings(&self) -> Result<AppearanceSettingsDto, ApplicationError> {
         let settings = self.load_settings().await?;
         Ok(settings.appearance.into())
     }
 
     /// データベース設定を取得
-    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto, SettingsError> {
+    pub async fn get_database_settings(&self) -> Result<DatabaseSettingsDto, ApplicationError> {
         let settings = self.load_settings().await?;
         Ok(settings.database.into())
     }
@@ -90,13 +90,13 @@ impl SettingsService {
     pub async fn update_general_settings(
         &self,
         language: Option<String>,
-    ) -> Result<GeneralSettingsDto, SettingsError> {
+    ) -> Result<GeneralSettingsDto, ApplicationError> {
         let mut settings = self.load_settings().await?;
 
         // 言語を更新
         if let Some(lang_str) = language {
             let language = Language::from_str(&lang_str)
-                .map_err(|e| SettingsError::InvalidLanguage(e.to_string()))?;
+                .map_err(|e| ApplicationError::InvalidLanguage(e.to_string()))?;
             settings.general.language = language;
         }
 
@@ -108,13 +108,13 @@ impl SettingsService {
     pub async fn update_appearance_settings(
         &self,
         theme: Option<String>,
-    ) -> Result<AppearanceSettingsDto, SettingsError> {
+    ) -> Result<AppearanceSettingsDto, ApplicationError> {
         let mut settings = self.load_settings().await?;
 
         // テーマを更新
         if let Some(theme_str) = theme {
             let theme = Theme::from_str(&theme_str)
-                .map_err(|e| SettingsError::InvalidTheme(e.to_string()))?;
+                .map_err(|e| ApplicationError::InvalidTheme(e.to_string()))?;
             settings.appearance.theme = theme;
         }
 
@@ -126,14 +126,14 @@ impl SettingsService {
     pub async fn update_database_settings(
         &self,
         database_directory: Option<String>,
-    ) -> Result<DatabaseSettingsDto, SettingsError> {
+    ) -> Result<DatabaseSettingsDto, ApplicationError> {
         let mut settings = self.load_settings().await?;
 
         // データベースディレクトリを更新
         if let Some(dir_str) = database_directory {
             // 空文字列チェック
             if dir_str.trim().is_empty() {
-                return Err(SettingsError::InvalidDatabaseDirectory(
+                return Err(ApplicationError::InvalidDatabaseDirectory(
                     "Database directory cannot be empty".to_string(),
                 ));
             }
@@ -142,7 +142,7 @@ impl SettingsService {
 
             // 絶対パスチェック
             if !path.is_absolute() {
-                return Err(SettingsError::InvalidDatabaseDirectory(
+                return Err(ApplicationError::InvalidDatabaseDirectory(
                     "Database directory must be an absolute path".to_string(),
                 ));
             }
@@ -152,7 +152,7 @@ impl SettingsService {
                 && !parent.exists()
                 && parent != std::path::Path::new("")
             {
-                return Err(SettingsError::InvalidDatabaseDirectory(format!(
+                return Err(ApplicationError::InvalidDatabaseDirectory(format!(
                     "Parent directory does not exist: {}",
                     parent.display()
                 )));
@@ -166,7 +166,7 @@ impl SettingsService {
     }
 
     /// すべての設定をリセット
-    pub async fn reset_all_settings(&self) -> Result<(), SettingsError> {
+    pub async fn reset_all_settings(&self) -> Result<(), ApplicationError> {
         // 設定ファイルを削除
         self.repository.delete().await?;
 

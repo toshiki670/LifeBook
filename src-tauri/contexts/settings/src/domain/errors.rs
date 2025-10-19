@@ -4,7 +4,7 @@ use thiserror::Error;
 
 /// Settings ドメイン層のエラー型
 #[derive(Error, Debug, Clone)]
-pub enum SettingsDomainError {
+pub enum DomainError {
     #[error("Validation error: {0}")]
     ValidationError(String),
 

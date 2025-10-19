@@ -1,7 +1,7 @@
 // Settings Infrastructure Layer - Settings Repository Implementation
 
 use crate::domain::{
-    entities::Settings, errors::SettingsDomainError, repositories::SettingsRepository,
+    entities::Settings, errors::DomainError, repositories::SettingsRepository,
 };
 use async_trait::async_trait;
 use std::path::PathBuf;
@@ -32,7 +32,7 @@ impl SettingsRepositoryImpl {
 
 #[async_trait]
 impl SettingsRepository for SettingsRepositoryImpl {
-    async fn load(&self) -> Result<Settings, SettingsDomainError> {
+    async fn load(&self) -> Result<Settings, DomainError> {
         let file_path = self.settings_file_path();
 
         // ファイルが存在しない場合はデフォルト設定を返す（デフォルトDBディレクトリを注入）
@@ -44,22 +44,22 @@ impl SettingsRepository for SettingsRepositoryImpl {
 
         // ファイルを読み込む
         let content = fs::read_to_string(&file_path).await.map_err(|e| {
-            SettingsDomainError::IoError(format!("Failed to read settings file: {}", e))
+            DomainError::IoError(format!("Failed to read settings file: {}", e))
         })?;
 
         // JSONをパース
         let settings: Settings = serde_json::from_str(&content).map_err(|e| {
-            SettingsDomainError::SerializationError(format!("Failed to parse settings file: {}", e))
+            DomainError::SerializationError(format!("Failed to parse settings file: {}", e))
         })?;
 
         Ok(settings)
     }
 
-    async fn save(&self, settings: &Settings) -> Result<(), SettingsDomainError> {
+    async fn save(&self, settings: &Settings) -> Result<(), DomainError> {
         // 設定ディレクトリが存在しない場合は作成
         if !self.config_dir.exists() {
             fs::create_dir_all(&self.config_dir).await.map_err(|e| {
-                SettingsDomainError::IoError(format!("Failed to create config directory: {}", e))
+                DomainError::IoError(format!("Failed to create config directory: {}", e))
             })?;
         }
 
@@ -67,23 +67,23 @@ impl SettingsRepository for SettingsRepositoryImpl {
 
         // 設定をJSONに変換（pretty print）
         let content = serde_json::to_string_pretty(settings).map_err(|e| {
-            SettingsDomainError::SerializationError(format!("Failed to serialize settings: {}", e))
+            DomainError::SerializationError(format!("Failed to serialize settings: {}", e))
         })?;
 
         // ファイルに書き込む
         fs::write(&file_path, content).await.map_err(|e| {
-            SettingsDomainError::IoError(format!("Failed to write settings file: {}", e))
+            DomainError::IoError(format!("Failed to write settings file: {}", e))
         })?;
 
         Ok(())
     }
 
-    async fn delete(&self) -> Result<(), SettingsDomainError> {
+    async fn delete(&self) -> Result<(), DomainError> {
         let file_path = self.settings_file_path();
 
         if file_path.exists() {
             fs::remove_file(&file_path).await.map_err(|e| {
-                SettingsDomainError::IoError(format!("Failed to delete settings file: {}", e))
+                DomainError::IoError(format!("Failed to delete settings file: {}", e))
             })?;
         }
 
