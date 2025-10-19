@@ -207,18 +207,70 @@ impl BookRepositoryImpl {
 }
 ```
 
-### 6. GraphQLスキーマ (`presentation/library/`)
+### 6. GraphQLスキーマ
 
-#### Query
+#### コンテキスト単位のAPI設計
+
+各コンテキストは独自のQuery/Mutationを提供し、メインアプリで統合されます。
+
+```graphql
+# Library Context
+query {
+  library {
+    books {
+      id
+      title
+    }
+    book(id: 1) {
+      id
+      title
+    }
+  }
+}
+
+# Settings Context（セクション単位）
+query {
+  settings {
+    generalSettings {
+      language
+    }
+    appearanceSettings {
+      theme
+    }
+    databaseSettings {
+      databaseDirectory
+    }
+  }
+}
+```
+
+#### Library Context（`presentation/library/`）
+
+**Query**:
 
 - `books`: すべての本を取得
 - `book(id: Int!)`: IDで本を取得
 
-#### Mutation
+**Mutation**:
 
 - `createBook(...)`: 新しい本を作成
 - `updateBook(...)`: 本を更新
 - `deleteBook(id: Int!)`: 本を削除
+
+#### Settings Context（`presentation/settings/`）
+
+**Query**（セクション単位）:
+
+- `generalSettings`: 一般設定を取得
+- `appearanceSettings`: 表示設定を取得
+- `databaseSettings`: データベース設定を取得
+
+**Mutation**（セクション単位）:
+
+- `updateGeneralSettings(language: String)`: 一般設定を更新
+- `updateAppearanceSettings(theme: String)`: 表示設定を更新
+- `updateDatabaseSettings(databaseDirectory: String)`: データベース設定を更新
+- `resetAllSettings`: 全設定をリセット
 
 ### 7. Tauriコマンド (`lib.rs`)
 
@@ -344,22 +396,124 @@ GraphQLスキーマとデータベース接続は、Tauriの状態管理機能�
 
 ### 3. エラーハンドリング
 
+#### Rust側: エラーコード付きGraphQLエラー
+
+```rust
+// contexts/settings/src/presentation/graphql/error_ext.rs
+use crate::application::errors::ApplicationError;
+use async_graphql::{Error, ErrorExtensions};
+
+pub fn to_graphql_error(e: ApplicationError) -> Error {
+    match e {
+        ApplicationError::InvalidLanguage(msg) => {
+            Error::new(msg).extend_with(|_, ext| {
+                ext.set("code", "INVALID_LANGUAGE");
+            })
+        },
+        ApplicationError::InvalidTheme(msg) => {
+            Error::new(msg).extend_with(|_, ext| {
+                ext.set("code", "INVALID_THEME");
+            })
+        },
+        ApplicationError::Domain(e) => {
+            Error::new(format!("Domain error: {}", e)).extend_with(|_, ext| {
+                ext.set("code", "DOMAIN_ERROR");
+            })
+        }
+    }
+}
+```
+
+#### フロントエンド側: エラーコードによる分岐
+
 GraphQLレスポンスには`data`と`errors`の両方が含まれる可能性があるため、
 フロントエンド側で適切に処理：
 
 ```typescript
 const response = await getBooks();
 if (response.errors) {
-  // エラー処理
+  // エラーコードで分岐
+  const errorCode = response.errors[0]?.extensions?.code;
+  switch (errorCode) {
+    case "INVALID_LANGUAGE":
+      // 言語エラー処理
+      break;
+    case "INVALID_THEME":
+      // テーマエラー処理
+      break;
+    case "DOMAIN_ERROR":
+      // ドメインエラー処理
+      break;
+    default:
+    // 一般エラー処理
+  }
 } else if (response.data) {
   // 成功時の処理
 }
 ```
 
+#### エラー変換の流れ
+
+```
+Domain Layer
+  ↓ DomainError (ValidationError, IoError, etc.)
+Application Layer
+  ↓ ApplicationError (InvalidLanguage, InvalidTheme, Domain, etc.)
+Presentation Layer
+  ↓ GraphQL Error + Error Code (INVALID_LANGUAGE, INVALID_THEME, etc.)
+Frontend
+  ↓ User-friendly message
+```
+
 ### 4. 型安全性
 
-- Rust側: SeaORMとasync-graphqlの型システムを活用
-- TypeScript側: GraphQLレスポンスの型を定義
+#### Rust側
+
+- **SeaORM**: データベースモデルの型安全性
+- **async-graphql**: GraphQLスキーマの型安全性
+- **Value Objects**: ドメイン概念の型安全性
+
+```rust
+// Value Objectsの例
+#[derive(Serialize, Deserialize, EnumString, AsRefStr, Display)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
+pub enum Theme {
+    Light,
+    Dark,
+    System,
+}
+
+// GraphQLでの使用
+#[Object]
+impl SettingsQuery {
+    async fn appearance_settings(&self) -> AppearanceSettingsDto {
+        // Theme型で型安全に扱う
+    }
+}
+```
+
+#### TypeScript側
+
+GraphQLレスポンスの型を定義：
+
+```typescript
+interface Book {
+  id: number;
+  title: string;
+  author?: string;
+}
+
+interface GraphQLResponse<T> {
+  data?: T;
+  errors?: Array<{
+    message: string;
+    extensions?: {
+      code?: string;
+    };
+  }>;
+}
+```
 
 ## 📝 今後の拡張案
 
