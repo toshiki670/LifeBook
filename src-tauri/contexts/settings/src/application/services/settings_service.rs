@@ -11,7 +11,7 @@ use crate::{
         value_objects::{Language, Theme},
     },
 };
-use std::path::PathBuf;
+use std::path::{Component, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -122,6 +122,69 @@ impl SettingsService {
         Ok(settings.appearance.into())
     }
 
+    /// データベースディレクトリのバリデーション（セキュリティ強化版）
+    fn validate_database_directory(path_str: &str) -> Result<PathBuf, ApplicationError> {
+        // 空文字列チェック
+        if path_str.trim().is_empty() {
+            return Err(ApplicationError::InvalidDatabaseDirectory(
+                "Database directory cannot be empty".to_string(),
+            ));
+        }
+
+        let path = PathBuf::from(path_str);
+
+        // 絶対パスチェック
+        if !path.is_absolute() {
+            return Err(ApplicationError::InvalidDatabaseDirectory(
+                "Database directory must be an absolute path".to_string(),
+            ));
+        }
+
+        // パストラバーサル検出（../ の使用を禁止）
+        for component in path.components() {
+            if matches!(component, Component::ParentDir) {
+                return Err(ApplicationError::InvalidDatabaseDirectory(
+                    "Path traversal detected: '..' is not allowed".to_string(),
+                ));
+            }
+        }
+
+        // シンボリックリンクの検出（存在する場合のみチェック）
+        if path.exists() && path.is_symlink() {
+            return Err(ApplicationError::InvalidDatabaseDirectory(
+                "Symbolic links are not allowed for security reasons".to_string(),
+            ));
+        }
+
+        // 親ディレクトリの存在チェック
+        if let Some(parent) = path.parent() {
+            // 空パスでない場合のみチェック
+            if parent != std::path::Path::new("") && !parent.exists() {
+                return Err(ApplicationError::InvalidDatabaseDirectory(format!(
+                    "Parent directory does not exist: {}",
+                    parent.display()
+                )));
+            }
+
+            // 親ディレクトリへの書き込み権限チェック（Unix系のみ）
+            #[cfg(unix)]
+            if parent.exists() {
+                use std::os::unix::fs::PermissionsExt;
+                if let Ok(metadata) = parent.metadata() {
+                    let permissions = metadata.permissions();
+                    // 書き込み権限があるかチェック (owner write = 0o200)
+                    if permissions.mode() & 0o200 == 0 {
+                        return Err(ApplicationError::InvalidDatabaseDirectory(
+                            "No write permission for parent directory".to_string(),
+                        ));
+                    }
+                }
+            }
+        }
+
+        Ok(path)
+    }
+
     /// データベース設定を更新
     pub async fn update_database_settings(
         &self,
@@ -131,34 +194,8 @@ impl SettingsService {
 
         // データベースディレクトリを更新
         if let Some(dir_str) = database_directory {
-            // 空文字列チェック
-            if dir_str.trim().is_empty() {
-                return Err(ApplicationError::InvalidDatabaseDirectory(
-                    "Database directory cannot be empty".to_string(),
-                ));
-            }
-
-            let path = PathBuf::from(dir_str);
-
-            // 絶対パスチェック
-            if !path.is_absolute() {
-                return Err(ApplicationError::InvalidDatabaseDirectory(
-                    "Database directory must be an absolute path".to_string(),
-                ));
-            }
-
-            // 親ディレクトリの存在チェック
-            if let Some(parent) = path.parent()
-                && !parent.exists()
-                && parent != std::path::Path::new("")
-            {
-                return Err(ApplicationError::InvalidDatabaseDirectory(format!(
-                    "Parent directory does not exist: {}",
-                    parent.display()
-                )));
-            }
-
-            settings.database.database_directory = path;
+            let validated_path = Self::validate_database_directory(&dir_str)?;
+            settings.database.database_directory = validated_path;
         }
 
         self.save_settings(&settings).await?;
