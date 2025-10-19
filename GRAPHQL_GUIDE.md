@@ -217,17 +217,29 @@ impl BookRepositoryImpl {
 # Library Context
 query {
   library {
-    books { id, title }
-    book(id: 1) { id, title }
+    books {
+      id
+      title
+    }
+    book(id: 1) {
+      id
+      title
+    }
   }
 }
 
 # Settings Context（セクション単位）
 query {
   settings {
-    generalSettings { language }
-    appearanceSettings { theme }
-    databaseSettings { databaseDirectory }
+    generalSettings {
+      language
+    }
+    appearanceSettings {
+      theme
+    }
+    databaseSettings {
+      databaseDirectory
+    }
   }
 }
 ```
@@ -235,10 +247,12 @@ query {
 #### Library Context（`presentation/library/`）
 
 **Query**:
+
 - `books`: すべての本を取得
 - `book(id: Int!)`: IDで本を取得
 
 **Mutation**:
+
 - `createBook(...)`: 新しい本を作成
 - `updateBook(...)`: 本を更新
 - `deleteBook(id: Int!)`: 本を削除
@@ -246,11 +260,13 @@ query {
 #### Settings Context（`presentation/settings/`）
 
 **Query**（セクション単位）:
+
 - `generalSettings`: 一般設定を取得
 - `appearanceSettings`: 表示設定を取得
 - `databaseSettings`: データベース設定を取得
 
 **Mutation**（セクション単位）:
+
 - `updateGeneralSettings(language: String)`: 一般設定を更新
 - `updateAppearanceSettings(theme: String)`: 表示設定を更新
 - `updateDatabaseSettings(databaseDirectory: String)`: データベース設定を更新
@@ -429,7 +445,7 @@ if (response.errors) {
       // ドメインエラー処理
       break;
     default:
-      // 一般エラー処理
+    // 一般エラー処理
   }
 } else if (response.data) {
   // 成功時の処理

@@ -47,6 +47,7 @@ pub use presentation::integration::build_service;
 ```
 
 これにより：
+
 - 外部からは re-export されたもののみアクセス可能
 - 内部実装の変更が外部に影響しない
 - カプセル化が強化される
@@ -233,6 +234,7 @@ impl Default for Theme {
 ```
 
 Value Objectsの利点：
+
 - 型安全性：`String`ではなく`Theme`型を使用
 - バリデーション：不正な値を防ぐ
 - ビジネス概念の明示：コードの可読性向上
@@ -297,6 +299,7 @@ pub enum ApplicationError {
 ```
 
 エラー型の命名規則：
+
 - **コンテキスト固有**: 各コンテキストが独自の`DomainError`, `ApplicationError`を持つ
 - **接頭辞なし**: `pub(crate)`で隠蔽されているため、衝突の心配なし
 - **sharedとの一貫性**: 将来sharedが廃止されても、命名規則は統一
@@ -452,7 +455,7 @@ impl QueryRoot {
     async fn library(&self) -> BookQuery {
         BookQuery
     }
-    
+
     async fn settings(&self) -> SettingsQuery {
         SettingsQuery
     }
@@ -466,7 +469,7 @@ impl MutationRoot {
     async fn library(&self) -> BookMutation {
         BookMutation
     }
-    
+
     async fn settings(&self) -> SettingsMutation {
         SettingsMutation
     }
@@ -709,7 +712,7 @@ migration
 各コンテキストCrateは：
 
 - **完全に独立**: 他のコンテキストに依存しない（疎結合）
-- **必要に応じて共有crateを参照**: 
+- **必要に応じて共有crateを参照**:
   - `entity`: SeaORM Entity（DBベースのコンテキスト）
   - `shared`: 共通エラー型（※将来廃止予定）
 - **pub(crate)で内部実装を隠蔽**: 外部からはre-exportのみアクセス可能
