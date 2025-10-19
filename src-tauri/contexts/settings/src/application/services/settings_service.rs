@@ -301,4 +301,173 @@ mod tests {
         let general = service.get_general_settings().await.unwrap();
         assert_eq!(general.language, "ja");
     }
+
+    // ============================================
+    // エラーケースのテスト
+    // ============================================
+
+    #[tokio::test]
+    async fn test_invalid_language_code() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 無効な言語コード
+        let result = service
+            .update_general_settings(Some("invalid".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidLanguage(_msg) => {
+                // エラーが返されれば成功
+            }
+            _ => panic!("Expected InvalidLanguage error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_invalid_theme() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 無効なテーマ
+        let result = service
+            .update_appearance_settings(Some("invalid".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidTheme(_msg) => {
+                // エラーが返されれば成功
+            }
+            _ => panic!("Expected InvalidTheme error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_empty_database_directory() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 空文字列
+        let result = service
+            .update_database_settings(Some("".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidDatabaseDirectory(msg) => {
+                assert!(msg.contains("empty"));
+            }
+            _ => panic!("Expected InvalidDatabaseDirectory error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_relative_path_rejected() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 相対パス
+        let result = service
+            .update_database_settings(Some("./relative/path".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidDatabaseDirectory(msg) => {
+                assert!(msg.contains("absolute path"));
+            }
+            _ => panic!("Expected InvalidDatabaseDirectory error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_path_traversal_rejected() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // パストラバーサルを含むパス
+        let result = service
+            .update_database_settings(Some("/tmp/test/../../../etc".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidDatabaseDirectory(msg) => {
+                assert!(msg.contains("Path traversal") || msg.contains("'..'"));
+            }
+            _ => panic!("Expected InvalidDatabaseDirectory error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_nonexistent_parent_directory() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 存在しない親ディレクトリ
+        let result = service
+            .update_database_settings(Some("/nonexistent/parent/databases".to_string()))
+            .await;
+
+        assert!(result.is_err());
+        match result.unwrap_err() {
+            ApplicationError::InvalidDatabaseDirectory(msg) => {
+                assert!(msg.contains("does not exist"));
+            }
+            _ => panic!("Expected InvalidDatabaseDirectory error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_valid_database_directory_accepted() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir.clone(),
+        ));
+        let service = SettingsService::new(repository);
+
+        // 有効なパス（存在する親ディレクトリを持つ）
+        let valid_path = temp_dir.path().join("my_databases");
+        let result = service
+            .update_database_settings(Some(valid_path.to_str().unwrap().to_string()))
+            .await;
+
+        assert!(result.is_ok());
+        let updated = result.unwrap();
+        assert_eq!(updated.database_directory, valid_path.to_str().unwrap());
+    }
 }
