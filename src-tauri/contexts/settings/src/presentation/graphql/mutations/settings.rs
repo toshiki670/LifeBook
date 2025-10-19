@@ -90,10 +90,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_update_general_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -108,8 +106,12 @@ mod tests {
         "#;
 
         let response = schema.execute(mutation).await;
-        assert!(response.errors.is_empty(), "GraphQL errors: {:?}", response.errors);
-        
+        assert!(
+            response.errors.is_empty(),
+            "GraphQL errors: {:?}",
+            response.errors
+        );
+
         let data = response.data.into_json().unwrap();
         assert_eq!(data["updateGeneralSettings"]["language"], "en");
     }
@@ -117,10 +119,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_update_appearance_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -136,7 +136,7 @@ mod tests {
 
         let response = schema.execute(mutation).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(data["updateAppearanceSettings"]["theme"], "dark");
     }
@@ -145,10 +145,8 @@ mod tests {
     async fn test_graphql_mutation_update_database_settings() {
         let temp_dir = TempDir::new().unwrap();
         let valid_path = temp_dir.path().join("my_databases");
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -167,7 +165,7 @@ mod tests {
 
         let response = schema.execute(&mutation).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(
             data["updateDatabaseSettings"]["databaseDirectory"],
@@ -178,10 +176,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_with_invalid_language() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -197,7 +193,7 @@ mod tests {
 
         let response = schema.execute(mutation).await;
         assert!(!response.errors.is_empty());
-        
+
         // エラーコードの確認
         let error = &response.errors[0];
         if let Some(ext) = &error.extensions {
@@ -214,10 +210,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_with_invalid_theme() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -233,7 +227,7 @@ mod tests {
 
         let response = schema.execute(mutation).await;
         assert!(!response.errors.is_empty());
-        
+
         // エラーコードの確認
         let error = &response.errors[0];
         if let Some(ext) = &error.extensions {
@@ -250,10 +244,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_with_invalid_path() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -269,7 +261,7 @@ mod tests {
 
         let response = schema.execute(mutation).await;
         assert!(!response.errors.is_empty());
-        
+
         // エラーコードの確認
         let error = &response.errors[0];
         if let Some(ext) = &error.extensions {
@@ -286,10 +278,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_mutation_reset_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -313,7 +303,7 @@ mod tests {
         "#;
         let response = schema.execute(mutation2).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(data["resetSettings"], true);
     }

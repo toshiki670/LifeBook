@@ -61,12 +61,12 @@ impl SettingsService {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
-            if let Some(cached) = cache.as_ref() {
-                if Self::is_cache_valid(cached, self.cache_ttl) {
-                    return Ok(cached.settings.clone());
-                }
-                // キャッシュが期限切れの場合は続行
+            if let Some(cached) = cache.as_ref()
+                && Self::is_cache_valid(cached, self.cache_ttl)
+            {
+                return Ok(cached.settings.clone());
             }
+            // キャッシュが期限切れの場合は続行
         }
 
         // キャッシュが無効または期限切れの場合はリポジトリから読み込む
@@ -592,4 +592,3 @@ mod tests {
         assert_eq!(settings.language, "en");
     }
 }
-

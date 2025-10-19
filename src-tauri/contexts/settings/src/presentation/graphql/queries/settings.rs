@@ -64,10 +64,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_query_general_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -82,8 +80,12 @@ mod tests {
         "#;
 
         let response = schema.execute(query).await;
-        assert!(response.errors.is_empty(), "GraphQL errors: {:?}", response.errors);
-        
+        assert!(
+            response.errors.is_empty(),
+            "GraphQL errors: {:?}",
+            response.errors
+        );
+
         let data = response.data.into_json().unwrap();
         assert!(data["generalSettings"]["language"].is_string());
         assert_eq!(data["generalSettings"]["language"], "ja");
@@ -92,10 +94,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_query_appearance_settings() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -111,7 +111,7 @@ mod tests {
 
         let response = schema.execute(query).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(data["appearanceSettings"]["theme"], "system");
     }
@@ -120,10 +120,7 @@ mod tests {
     async fn test_graphql_query_database_settings() {
         let temp_dir = TempDir::new().unwrap();
         let default_db_dir = temp_dir.path().join("databases");
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            default_db_dir.clone(),
-        );
+        let service = build_settings_service(temp_dir.path().to_path_buf(), default_db_dir.clone());
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -139,7 +136,7 @@ mod tests {
 
         let response = schema.execute(query).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(
             data["databaseSettings"]["databaseDirectory"],
@@ -150,10 +147,8 @@ mod tests {
     #[tokio::test]
     async fn test_graphql_query_all_sections() {
         let temp_dir = TempDir::new().unwrap();
-        let service = build_settings_service(
-            temp_dir.path().to_path_buf(),
-            PathBuf::from("/default/db"),
-        );
+        let service =
+            build_settings_service(temp_dir.path().to_path_buf(), PathBuf::from("/default/db"));
 
         let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
             .data(service)
@@ -175,7 +170,7 @@ mod tests {
 
         let response = schema.execute(query).await;
         assert!(response.errors.is_empty());
-        
+
         let data = response.data.into_json().unwrap();
         assert_eq!(data["generalSettings"]["language"], "ja");
         assert_eq!(data["appearanceSettings"]["theme"], "system");
