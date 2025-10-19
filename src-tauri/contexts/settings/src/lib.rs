@@ -1,9 +1,9 @@
 // Settings Context - Library Entry Point
 
-pub mod application;
-pub mod domain;
-pub mod infrastructure;
-pub mod presentation;
+pub(crate) mod application;
+pub(crate) mod domain;
+pub(crate) mod infrastructure;
+pub(crate) mod presentation;
 
 // Public API - Presentation層のみ公開
 pub use presentation::graphql::{mutations::SettingsMutation, queries::SettingsQuery};
