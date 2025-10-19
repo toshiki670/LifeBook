@@ -12,6 +12,14 @@ resolver = "2"
 [workspace.package]
 edition = "2024"
 
+[workspace.lints.clippy]
+# Pedantic lints that are practical and catch common bugs
+match_wildcard_for_single_variants = "warn"
+cast_possible_truncation = "warn"
+cast_precision_loss = "warn"
+trivially_copy_pass_by_ref = "warn"
+unnecessary_wraps = "warn"
+
 [workspace.dependencies]
 # Async & Concurrency
 async-graphql = "7.0.17"

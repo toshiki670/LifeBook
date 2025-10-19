@@ -4,6 +4,9 @@ version = "0.1.0"
 edition.workspace = true
 publish = false
 
+[lints]
+workspace = true
+
 [lib]
 name = "library"
 path = "src/lib.rs"
