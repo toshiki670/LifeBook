@@ -14,13 +14,22 @@ use crate::{
 use std::path::{Component, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::sync::RwLock;
+
+/// キャッシュされた設定とタイムスタンプ
+struct CachedSettings {
+    settings: Settings,
+    cached_at: Instant,
+}
 
 /// 設定管理サービス
 pub struct SettingsService {
     repository: Arc<dyn SettingsRepository>,
     // メモリキャッシュ（頻繁な読み込みを避けるため）
-    cache: Arc<RwLock<Option<Settings>>>,
+    cache: Arc<RwLock<Option<CachedSettings>>>,
+    // キャッシュの有効期限（秒）
+    cache_ttl: Duration,
 }
 
 impl SettingsService {
@@ -29,29 +38,56 @@ impl SettingsService {
         Self {
             repository,
             cache: Arc::new(RwLock::new(None)),
+            cache_ttl: Duration::from_secs(60), // デフォルト60秒
         }
     }
 
-    /// 設定を読み込む（キャッシュを使用）
+    /// カスタムTTLでサービスインスタンスを作成
+    pub fn new_with_ttl(repository: Arc<dyn SettingsRepository>, ttl_seconds: u64) -> Self {
+        Self {
+            repository,
+            cache: Arc::new(RwLock::new(None)),
+            cache_ttl: Duration::from_secs(ttl_seconds),
+        }
+    }
+
+    /// キャッシュの有効性をチェック
+    fn is_cache_valid(cached: &CachedSettings, ttl: Duration) -> bool {
+        cached.cached_at.elapsed() < ttl
+    }
+
+    /// 設定を読み込む（TTL付きキャッシュを使用）
     async fn load_settings(&self) -> Result<Settings, ApplicationError> {
         // キャッシュをチェック
         {
             let cache = self.cache.read().await;
-            if let Some(settings) = cache.as_ref() {
-                return Ok(settings.clone());
+            if let Some(cached) = cache.as_ref() {
+                if Self::is_cache_valid(cached, self.cache_ttl) {
+                    return Ok(cached.settings.clone());
+                }
+                // キャッシュが期限切れの場合は続行
             }
         }
 
-        // キャッシュがない場合はリポジトリから読み込む
+        // キャッシュが無効または期限切れの場合はリポジトリから読み込む
         let settings = self.repository.load().await?;
 
         // キャッシュを更新
         {
             let mut cache = self.cache.write().await;
-            *cache = Some(settings.clone());
+            *cache = Some(CachedSettings {
+                settings: settings.clone(),
+                cached_at: Instant::now(),
+            });
         }
 
         Ok(settings)
+    }
+
+    /// キャッシュを明示的に無効化
+    pub async fn invalidate_cache(&self) {
+        let mut cache = self.cache.write().await;
+        *cache = None;
     }
 
     /// 設定を保存（キャッシュも更新）
@@ -59,10 +95,13 @@ impl SettingsService {
         // リポジトリに保存
         self.repository.save(settings).await?;
 
-        // キャッシュを更新
+        // キャッシュを更新（新しいタイムスタンプで）
         {
             let mut cache = self.cache.write().await;
-            *cache = Some(settings.clone());
+            *cache = Some(CachedSettings {
+                settings: settings.clone(),
+                cached_at: Instant::now(),
+            });
         }
 
         Ok(())
@@ -365,9 +404,7 @@ mod tests {
         let service = SettingsService::new(repository);
 
         // 空文字列
-        let result = service
-            .update_database_settings(Some("".to_string()))
-            .await;
+        let result = service.update_database_settings(Some("".to_string())).await;
 
         assert!(result.is_err());
         match result.unwrap_err() {
@@ -470,4 +507,89 @@ mod tests {
         let updated = result.unwrap();
         assert_eq!(updated.database_directory, valid_path.to_str().unwrap());
     }
+
+    // ============================================
+    // キャッシュTTLのテスト
+    // ============================================
+
+    #[tokio::test]
+    async fn test_cache_ttl_expiration() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        // 1秒のTTLでサービスを作成
+        let service = SettingsService::new_with_ttl(repository, 1);
+
+        // 初回読み込み
+        let settings1 = service.get_general_settings().await.unwrap();
+        assert_eq!(settings1.language, "ja");
+
+        // 設定を直接ファイルで変更（キャッシュをバイパス）
+        let settings_path = temp_dir.path().join("settings.json");
+        let new_settings = r#"{"general":{"language":"en"},"appearance":{"theme":"system"},"database":{"database_directory":""}}"#;
+        std::fs::write(&settings_path, new_settings).unwrap();
+
+        // TTL内ならキャッシュが使われる
+        let settings2 = service.get_general_settings().await.unwrap();
+        assert_eq!(settings2.language, "ja"); // まだキャッシュが使われている
+
+        // TTLが切れるまで待つ
+        tokio::time::sleep(Duration::from_secs(2)).await;
+
+        // TTL切れ後は新しい値が読まれる
+        let settings3 = service.get_general_settings().await.unwrap();
+        assert_eq!(settings3.language, "en"); // ファイルから再読み込み
+    }
+
+    #[tokio::test]
+    async fn test_cache_invalidation() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 初回読み込み
+        let settings1 = service.get_general_settings().await.unwrap();
+        assert_eq!(settings1.language, "ja");
+
+        // 設定を直接ファイルで変更
+        let settings_path = temp_dir.path().join("settings.json");
+        let new_settings = r#"{"general":{"language":"en"},"appearance":{"theme":"system"},"database":{"database_directory":""}}"#;
+        std::fs::write(&settings_path, new_settings).unwrap();
+
+        // キャッシュを無効化
+        service.invalidate_cache().await;
+
+        // すぐに新しい値が読まれる
+        let settings2 = service.get_general_settings().await.unwrap();
+        assert_eq!(settings2.language, "en");
+    }
+
+    #[tokio::test]
+    async fn test_cache_updated_on_save() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let repository = Arc::new(SettingsRepositoryImpl::new(
+            temp_dir.path().to_path_buf(),
+            default_db_dir,
+        ));
+        let service = SettingsService::new(repository);
+
+        // 設定を更新（キャッシュも更新される）
+        service
+            .update_general_settings(Some("en".to_string()))
+            .await
+            .unwrap();
+
+        // すぐに読み込んでもキャッシュから最新の値が取得できる
+        let settings = service.get_general_settings().await.unwrap();
+        assert_eq!(settings.language, "en");
+    }
 }
+
