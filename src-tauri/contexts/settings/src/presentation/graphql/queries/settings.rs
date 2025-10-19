@@ -51,3 +51,134 @@ impl SettingsQuery {
             .map_err(to_graphql_error)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::presentation::graphql::mutations::SettingsMutation;
+    use crate::presentation::integration::build_settings_service;
+    use async_graphql::{EmptySubscription, Schema};
+    use std::path::PathBuf;
+    use tempfile::TempDir;
+
+    #[tokio::test]
+    async fn test_graphql_query_general_settings() {
+        let temp_dir = TempDir::new().unwrap();
+        let service = build_settings_service(
+            temp_dir.path().to_path_buf(),
+            PathBuf::from("/default/db"),
+        );
+
+        let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
+            .data(service)
+            .finish();
+
+        let query = r#"
+            query {
+                generalSettings {
+                    language
+                }
+            }
+        "#;
+
+        let response = schema.execute(query).await;
+        assert!(response.errors.is_empty(), "GraphQL errors: {:?}", response.errors);
+        
+        let data = response.data.into_json().unwrap();
+        assert!(data["generalSettings"]["language"].is_string());
+        assert_eq!(data["generalSettings"]["language"], "ja");
+    }
+
+    #[tokio::test]
+    async fn test_graphql_query_appearance_settings() {
+        let temp_dir = TempDir::new().unwrap();
+        let service = build_settings_service(
+            temp_dir.path().to_path_buf(),
+            PathBuf::from("/default/db"),
+        );
+
+        let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
+            .data(service)
+            .finish();
+
+        let query = r#"
+            query {
+                appearanceSettings {
+                    theme
+                }
+            }
+        "#;
+
+        let response = schema.execute(query).await;
+        assert!(response.errors.is_empty());
+        
+        let data = response.data.into_json().unwrap();
+        assert_eq!(data["appearanceSettings"]["theme"], "system");
+    }
+
+    #[tokio::test]
+    async fn test_graphql_query_database_settings() {
+        let temp_dir = TempDir::new().unwrap();
+        let default_db_dir = temp_dir.path().join("databases");
+        let service = build_settings_service(
+            temp_dir.path().to_path_buf(),
+            default_db_dir.clone(),
+        );
+
+        let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
+            .data(service)
+            .finish();
+
+        let query = r#"
+            query {
+                databaseSettings {
+                    databaseDirectory
+                }
+            }
+        "#;
+
+        let response = schema.execute(query).await;
+        assert!(response.errors.is_empty());
+        
+        let data = response.data.into_json().unwrap();
+        assert_eq!(
+            data["databaseSettings"]["databaseDirectory"],
+            default_db_dir.to_str().unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_graphql_query_all_sections() {
+        let temp_dir = TempDir::new().unwrap();
+        let service = build_settings_service(
+            temp_dir.path().to_path_buf(),
+            PathBuf::from("/default/db"),
+        );
+
+        let schema = Schema::build(SettingsQuery, SettingsMutation, EmptySubscription)
+            .data(service)
+            .finish();
+
+        let query = r#"
+            query {
+                generalSettings {
+                    language
+                }
+                appearanceSettings {
+                    theme
+                }
+                databaseSettings {
+                    databaseDirectory
+                }
+            }
+        "#;
+
+        let response = schema.execute(query).await;
+        assert!(response.errors.is_empty());
+        
+        let data = response.data.into_json().unwrap();
+        assert_eq!(data["generalSettings"]["language"], "ja");
+        assert_eq!(data["appearanceSettings"]["theme"], "system");
+        assert!(data["databaseSettings"]["databaseDirectory"].is_string());
+    }
+}
