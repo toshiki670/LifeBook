@@ -2,7 +2,7 @@
 
 use library::{BookRepositoryImpl, BookService};
 use sea_orm::DatabaseConnection;
-use settings::{build_settings_service, SettingsService};
+use settings::{SettingsService, build_settings_service};
 use std::path::PathBuf;
 use std::sync::Arc;
 

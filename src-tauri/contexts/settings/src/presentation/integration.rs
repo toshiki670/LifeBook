@@ -21,4 +21,3 @@ pub fn build_settings_service(
     let settings_repo = Arc::new(SettingsRepositoryImpl::new(config_dir, default_db_dir));
     Arc::new(SettingsService::new(settings_repo))
 }
-
