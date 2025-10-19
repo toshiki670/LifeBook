@@ -28,4 +28,3 @@ impl From<strum::ParseError> for SettingsError {
         SettingsError::InvalidLanguage(e.to_string())
     }
 }
-
