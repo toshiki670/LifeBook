@@ -30,7 +30,28 @@ Presentation → Application → Domain ← Infrastructure
 
 各コンテキストは独立してビルド・テスト可能で、明確なAPI境界を持ちます。
 
-### 3. レイヤー単位の分割
+### 4. モジュール可視性制御
+
+各コンテキストのlib.rsでは`pub(crate)`を使用して内部実装を隠蔽します：
+
+```rust
+// contexts/{context}/src/lib.rs
+pub(crate) mod application;     // クレート内のみ
+pub(crate) mod domain;          // クレート内のみ
+pub(crate) mod infrastructure;  // クレート内のみ
+pub(crate) mod presentation;    // クレート内のみ
+
+// Public API - re-exportのみ公開
+pub use presentation::graphql::{Query, Mutation};
+pub use presentation::integration::build_service;
+```
+
+これにより：
+- 外部からは re-export されたもののみアクセス可能
+- 内部実装の変更が外部に影響しない
+- カプセル化が強化される
+
+### 5. レイヤー単位の分割
 
 各境界づけられたコンテキスト内部は、レイヤー単位で整理します。
 
@@ -48,7 +69,7 @@ src-tauri/
 │   └── Cargo.toml                    # メインアプリの依存関係
 │
 ├── contexts/                         # 境界づけられたコンテキスト（Crates）
-│   ├── library/                      # 図書管理コンテキストCrate
+│   ├── library/                      # 図書管理コンテキストCrate（DBベース）
 │   │   ├── src/
 │   │   │   ├── domain/               # Domain層
 │   │   │   │   ├── entities/         # エンティティ
@@ -76,6 +97,47 @@ src-tauri/
 │   │   │   │   └── presentation.rs   # Presentationモジュール定義
 │   │   │   └── lib.rs                # Libraryのエントリーポイント
 │   │   └── Cargo.toml                # Library crateの依存関係
+│   │
+│   ├── settings/                     # 設定管理コンテキストCrate（ファイルシステムベース）
+│   │   ├── src/
+│   │   │   ├── domain/               # Domain層
+│   │   │   │   ├── entities/         # エンティティ
+│   │   │   │   │   ├── settings.rs   # Settings Entity
+│   │   │   │   │   ├── general.rs    # GeneralSettings
+│   │   │   │   │   ├── appearance.rs # AppearanceSettings
+│   │   │   │   │   └── database.rs   # DatabaseSettings
+│   │   │   │   ├── value_objects/    # 値オブジェクト
+│   │   │   │   │   ├── theme.rs      # Theme enum
+│   │   │   │   │   └── language.rs   # Language enum
+│   │   │   │   ├── repositories/     # リポジトリインターフェース
+│   │   │   │   │   └── settings.rs   # SettingsRepository trait
+│   │   │   │   ├── errors.rs         # DomainError
+│   │   │   │   └── domain.rs         # Domainモジュール定義
+│   │   │   ├── application/          # Application層
+│   │   │   │   ├── dto/              # データ転送オブジェクト
+│   │   │   │   │   ├── general.rs    # GeneralSettingsDto
+│   │   │   │   │   ├── appearance.rs # AppearanceSettingsDto
+│   │   │   │   │   └── database.rs   # DatabaseSettingsDto
+│   │   │   │   ├── services/         # アプリケーションサービス
+│   │   │   │   │   └── settings_service.rs # SettingsService
+│   │   │   │   ├── errors.rs         # ApplicationError
+│   │   │   │   └── application.rs    # Applicationモジュール定義
+│   │   │   ├── infrastructure/       # Infrastructure層
+│   │   │   │   ├── repositories/     # Repository実装
+│   │   │   │   │   └── settings.rs   # SettingsRepositoryImpl（ファイルシステム）
+│   │   │   │   └── infrastructure.rs # Infrastructureモジュール定義
+│   │   │   ├── presentation/         # Presentation層（GraphQL）
+│   │   │   │   ├── graphql/          # GraphQL API
+│   │   │   │   │   ├── queries/
+│   │   │   │   │   │   └── settings.rs # Settings Query
+│   │   │   │   │   ├── mutations/
+│   │   │   │   │   │   └── settings.rs # Settings Mutation
+│   │   │   │   │   ├── error_ext.rs  # GraphQLエラー変換
+│   │   │   │   │   └── graphql.rs    # GraphQLモジュール定義
+│   │   │   │   ├── integration.rs    # 統合ヘルパー関数
+│   │   │   │   └── presentation.rs   # Presentationモジュール定義
+│   │   │   └── lib.rs                # Settingsのエントリーポイント
+│   │   └── Cargo.toml                # Settings crateの依存関係
 │   │
 │   └── shared/                       # 共通コンテキストCrate
 │       ├── src/
@@ -114,8 +176,14 @@ src-tauri/
   - バリデーション
   - 不変条件の保護
   - ドメインロジック
+- **value_objects/**: 値オブジェクト（不変で交換可能）
+  - 型安全性の向上
+  - ビジネス概念の明示
+  - バリデーションロジックのカプセル化
 - **repositories/**: リポジトリのインターフェース（trait）
   - 永続化の抽象化
+- **errors.rs**: コンテキスト固有のドメインエラー
+  - `DomainError`（接頭辞なし）
 
 **依存関係**: なし（他のレイヤーに依存しない）
 
@@ -133,12 +201,42 @@ impl Book {
     pub fn new(...) -> Result<Self, DomainError> {
         // バリデーション
         if title.trim().is_empty() {
-            return Err(DomainError::ValidationError("Title cannot be empty"));
+            return Err(DomainError::ValidationError("Title cannot be empty".to_string()));
         }
         Ok(Self { ... })
     }
 }
 ```
+
+**Value Objectsの実装例**:
+
+```rust
+// contexts/settings/src/domain/value_objects/theme.rs
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
+use strum::{AsRefStr, Display, EnumString};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, EnumString, AsRefStr, Display)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase", ascii_case_insensitive)]
+pub enum Theme {
+    Light,
+    Dark,
+    System,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self::System
+    }
+}
+```
+
+Value Objectsの利点：
+- 型安全性：`String`ではなく`Theme`型を使用
+- バリデーション：不正な値を防ぐ
+- ビジネス概念の明示：コードの可読性向上
+- 変更に強い：Themeの定義変更が一箇所で済む
 
 ### Application層（`contexts/{context}/src/application/`）
 
@@ -149,6 +247,9 @@ impl Book {
   - ドメインエンティティの協調
   - トランザクション管理
   - DTOへの変換
+- **errors.rs**: コンテキスト固有のアプリケーションエラー
+  - `ApplicationError`（接頭辞なし）
+  - DomainErrorをラップ
 
 **依存関係**: Domain層のみ
 
@@ -171,6 +272,34 @@ impl BookService {
     }
 }
 ```
+
+**エラー型の実装例**:
+
+```rust
+// contexts/settings/src/application/errors.rs
+use crate::domain::errors::DomainError;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ApplicationError {
+    #[error("Invalid language code: {0}")]
+    InvalidLanguage(String),
+
+    #[error("Invalid theme: {0}")]
+    InvalidTheme(String),
+
+    #[error("Invalid database directory: {0}")]
+    InvalidDatabaseDirectory(String),
+
+    #[error("Domain error: {0}")]
+    Domain(#[from] DomainError),
+}
+```
+
+エラー型の命名規則：
+- **コンテキスト固有**: 各コンテキストが独自の`DomainError`, `ApplicationError`を持つ
+- **接頭辞なし**: `pub(crate)`で隠蔽されているため、衝突の心配なし
+- **sharedとの一貫性**: 将来sharedが廃止されても、命名規則は統一
 
 ### Infrastructure層
 
@@ -260,41 +389,128 @@ Presentation層は2つの場所に分かれています：
 **実装例**:
 
 ```rust
-// contexts/library/src/presentation/graphql/queries/book.rs
+// contexts/settings/src/presentation/graphql/queries/settings.rs
+use crate::presentation::graphql::to_graphql_error;
+
 #[Object]
-impl BookQuery {
-    async fn books(&self, ctx: &Context<'_>) -> Result<Vec<BookDto>> {
-        let book_service = ctx.data::<Arc<BookService>>()?;
+impl SettingsQuery {
+    async fn general_settings(&self, ctx: &Context<'_>) -> Result<GeneralSettingsDto> {
+        let settings_service = ctx.data::<Arc<SettingsService>>()?;
         // Application Serviceに委譲
-        book_service.get_all_books().await
-            .map_err(|e| Error::new(e.to_string()))
+        settings_service
+            .get_general_settings()
+            .await
+            .map_err(to_graphql_error)  // エラーコード付きGraphQLエラーに変換
     }
 }
 ```
+
+**GraphQLエラー変換**:
+
+```rust
+// contexts/settings/src/presentation/graphql/error_ext.rs
+use crate::application::errors::ApplicationError;
+use async_graphql::{Error, ErrorExtensions};
+
+pub fn to_graphql_error(e: ApplicationError) -> Error {
+    match e {
+        ApplicationError::InvalidLanguage(msg) => Error::new(msg).extend_with(|_, ext| {
+            ext.set("code", "INVALID_LANGUAGE");
+        }),
+        ApplicationError::InvalidTheme(msg) => Error::new(msg).extend_with(|_, ext| {
+            ext.set("code", "INVALID_THEME");
+        }),
+        ApplicationError::Domain(e) => {
+            Error::new(format!("Domain error: {}", e)).extend_with(|_, ext| {
+                ext.set("code", "DOMAIN_ERROR");
+            })
+        }
+    }
+}
+```
+
+エラーコードを付与することで、フロントエンドでエラーの種類を判別しやすくなります。
 
 #### 2. メインアプリ（`lifebook/src/graphql_schema.rs`）
 
 **責務**: GraphQLスキーマの統合のみ
 
-- **graphql_schema.rs**: 各コンテキストから提供されるQuery/Mutationを`MergedObject`で統合
+- **graphql_schema.rs**: 各コンテキストから提供されるQuery/Mutationを統合
 
 **実装例**:
 
 ```rust
 // lifebook/src/graphql_schema.rs
 use library::{BookQuery, BookMutation};
+use settings::{SettingsQuery, SettingsMutation};
 
-#[derive(MergedObject, Default)]
-pub struct QueryRoot(BookQuery);
+#[derive(Default)]
+pub struct QueryRoot;
 
-#[derive(MergedObject, Default)]
-pub struct MutationRoot(BookMutation);
+#[Object]
+impl QueryRoot {
+    async fn library(&self) -> BookQuery {
+        BookQuery
+    }
+    
+    async fn settings(&self) -> SettingsQuery {
+        SettingsQuery
+    }
+}
+
+#[derive(Default)]
+pub struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn library(&self) -> BookMutation {
+        BookMutation
+    }
+    
+    async fn settings(&self) -> SettingsMutation {
+        SettingsMutation
+    }
+}
 
 pub fn build_schema(app_state: AppState) -> AppSchema {
-    Schema::build(QueryRoot::default(), MutationRoot::default(), EmptySubscription)
+    Schema::build(QueryRoot, MutationRoot, EmptySubscription)
         .data(app_state.book_service)
+        .data(app_state.settings_service)
         .finish()
 }
+```
+
+#### 3. Presentation層の統合ヘルパー（`contexts/{context}/src/presentation/integration.rs`）
+
+**責務**: 依存性注入の簡素化
+
+外部からの依存性注入を簡単にするため、統合ヘルパー関数を提供します。
+
+**実装例**:
+
+```rust
+// contexts/settings/src/presentation/integration.rs
+use crate::application::services::SettingsService;
+use crate::infrastructure::repositories::SettingsRepositoryImpl;
+use std::path::PathBuf;
+use std::sync::Arc;
+
+pub fn build_settings_service(
+    config_dir: PathBuf,
+    default_db_dir: PathBuf,
+) -> Arc<SettingsService> {
+    let settings_repo = Arc::new(SettingsRepositoryImpl::new(config_dir, default_db_dir));
+    Arc::new(SettingsService::new(settings_repo))
+}
+```
+
+これにより、lifebookアプリは内部実装を知らずにサービスを構築できます：
+
+```rust
+// lifebook/src/app_state.rs
+use settings::build_settings_service;
+
+let settings_service = build_settings_service(config_dir, default_db_dir);
 ```
 
 ## 新しい機能の追加方法
@@ -442,25 +658,33 @@ src-tauri/
 
 `lifebook/src/app_state.rs`で依存関係を構築します。
 
+各コンテキストは統合ヘルパー関数を提供し、lifebookアプリは内部実装を知らずにサービスを構築できます。
+
 ```rust
 use library::{BookRepositoryImpl, BookService};
+use settings::build_settings_service;
 use sea_orm::DatabaseConnection;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 pub struct AppState {
     pub book_service: Arc<BookService>,
-    // 他のサービスを追加
+    pub settings_service: Arc<SettingsService>,
 }
 
 impl AppState {
-    pub fn new(db: DatabaseConnection) -> Self {
-        // 1. Repository実装を作成（library crateから）
+    pub fn new(db: DatabaseConnection, config_dir: PathBuf, default_db_dir: PathBuf) -> Self {
+        // Library Context（従来の方法）
         let book_repo = Arc::new(BookRepositoryImpl::new(db.clone()));
-
-        // 2. Serviceを作成（Repositoryを注入）
         let book_service = Arc::new(BookService::new(book_repo));
 
-        Self { book_service }
+        // Settings Context（統合ヘルパー関数）
+        let settings_service = build_settings_service(config_dir, default_db_dir);
+
+        Self {
+            book_service,
+            settings_service,
+        }
     }
 }
 ```
@@ -470,9 +694,11 @@ impl AppState {
 ```
 lifebook (メインアプリ)
   ├─> library (図書管理コンテキスト)
-  │     ├─> shared (共通要素)
+  │     ├─> shared (共通要素) ※将来廃止予定
   │     └─> entity (DBエンティティ)
-  ├─> shared
+  ├─> settings (設定管理コンテキスト)
+  │     └─> (依存なし - 完全独立)
+  ├─> shared ※将来廃止予定
   ├─> entity
   └─> migration
 
@@ -482,9 +708,11 @@ migration
 
 各コンテキストCrateは：
 
-- **shared** crateに依存（共通エラー型など）
-- **entity** crateに依存（SeaORM Entity）
-- 他のコンテキストには依存しない（疎結合）
+- **完全に独立**: 他のコンテキストに依存しない（疎結合）
+- **必要に応じて共有crateを参照**: 
+  - `entity`: SeaORM Entity（DBベースのコンテキスト）
+  - `shared`: 共通エラー型（※将来廃止予定）
+- **pub(crate)で内部実装を隠蔽**: 外部からはre-exportのみアクセス可能
 
 ## テスト戦略
 
@@ -517,14 +745,22 @@ mod tests {
 
 1. **ビジネスルールはDomain層に**
    - バリデーションはエンティティに
+   - Value Objectsで型安全性を高める
 2. **薄いPresentation層を保つ**
    - Application Serviceへの委譲のみ
+   - エラー変換とエラーコード付与
 3. **Repository経由でのみDB操作**
    - 直接SeaORMを使わない
 4. **DTOで境界を明確に**
    - ドメインモデルを直接返さない
 5. **エラーは各層で適切に変換**
-   - DomainError → ApplicationError → GraphQL Error
+   - DomainError → ApplicationError → GraphQL Error（エラーコード付き）
+6. **pub(crate)で内部実装を隠蔽**
+   - re-exportのみを公開APIとする
+7. **統合ヘルパー関数を提供**
+   - Presentation層で依存性注入を簡素化
+8. **コンテキスト固有のエラー型を定義**
+   - 接頭辞なしの`DomainError`, `ApplicationError`
 
 ### ❌ 避けること
 

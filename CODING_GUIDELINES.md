@@ -233,17 +233,20 @@ impl BookRepository for BookRepositoryImpl {
 
 **ファイル構成**:
 
-- `schema.rs` - GraphQLスキーマ構築
-- `library/queries/book.rs` - GraphQL Query（読み取り操作）
-- `library/mutations/book.rs` - GraphQL Mutation（書き込み操作）
+- `graphql/` - GraphQL API
+  - `queries/` - GraphQL Query（読み取り操作）
+  - `mutations/` - GraphQL Mutation（書き込み操作）
+  - `error_ext.rs` - GraphQLエラー変換
+- `integration.rs` - 統合ヘルパー関数
 
 **ルール**:
 
 - ビジネスロジックを含まない
 - Application層のサービスに処理を委譲
-- GraphQLエラーハンドリング
+- GraphQLエラーハンドリング（エラーコード付与）
+- 統合ヘルパー関数で依存性注入を簡素化
 
-**例**:
+**例（GraphQL Query）**:
 
 ```rust
 // presentation/library/mutations/book.rs
@@ -289,6 +292,91 @@ impl BookMutation {
    - `app_state.rs` でサービスを登録
 
 詳細は `ARCHITECTURE.md` を参照してください。
+
+## 🔒 モジュール可視性制御
+
+### 原則: pub(crate)で内部実装を隠蔽
+
+各コンテキスト（`contexts/{context}/src/lib.rs`）では、`pub(crate)`を使用して内部実装を完全に隠蔽します。
+
+```rust
+// contexts/settings/src/lib.rs
+
+pub(crate) mod application;     // クレート内のみアクセス可能
+pub(crate) mod domain;          // クレート内のみアクセス可能
+pub(crate) mod infrastructure;  // クレート内のみアクセス可能
+pub(crate) mod presentation;    // クレート内のみアクセス可能
+
+// Public API - re-exportのみ公開
+pub use presentation::graphql::{mutations::SettingsMutation, queries::SettingsQuery};
+pub use presentation::integration::build_settings_service;
+pub use application::services::SettingsService;  // 型アノテーション用
+```
+
+### メリット
+
+1. **完全なカプセル化**: 外部からは`settings::domain::...`などに直接アクセス不可
+2. **制御されたAPI**: re-exportされたもののみが公開API
+3. **リファクタリング容易**: 内部構造変更が外部に影響しない
+4. **誤用防止**: 内部モジュールへの直接アクセスを防止
+
+### 外部からのアクセス
+
+```rust
+// ✅ 可能（re-exportされている）
+use settings::SettingsQuery;
+use settings::SettingsMutation;
+use settings::build_settings_service;
+use settings::SettingsService;
+
+// ❌ 不可能（pub(crate)で隠蔽）
+use settings::domain::entities::Settings;         // コンパイルエラー
+use settings::application::errors::ApplicationError;  // コンパイルエラー
+use settings::infrastructure::repositories::SettingsRepositoryImpl;  // コンパイルエラー
+```
+
+## 🏷️ エラー型の命名規則
+
+### 原則: コンテキスト固有、接頭辞なし
+
+各コンテキストは独自の`DomainError`と`ApplicationError`を持ちます。
+
+```rust
+// contexts/settings/src/domain/errors.rs
+#[derive(Error, Debug, Clone)]
+pub enum DomainError {  // ← 接頭辞なし（SettingsDomainErrorではない）
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+    // ...
+}
+
+// contexts/settings/src/application/errors.rs
+#[derive(Error, Debug)]
+pub enum ApplicationError {  // ← 接頭辞なし（SettingsApplicationErrorではない）
+    #[error("Domain error: {0}")]
+    Domain(#[from] DomainError),
+    // ...
+}
+```
+
+### 理由
+
+1. **pub(crate)で隠蔽**: エラー型は外部に公開されないため、衝突の心配なし
+2. **シンプル**: 冗長な接頭辞が不要
+3. **一貫性**: sharedクレートと同じ命名規則
+4. **将来性**: sharedが廃止されても、全コンテキストで統一された命名
+
+### エラー変換の流れ
+
+```
+Domain Layer
+  ↓ DomainError
+Application Layer
+  ↓ ApplicationError (DomainErrorをラップ)
+Presentation Layer
+  ↓ GraphQL Error (エラーコード付き)
+Frontend
+```
 
 ## 📁 モジュール構造の方針
 
