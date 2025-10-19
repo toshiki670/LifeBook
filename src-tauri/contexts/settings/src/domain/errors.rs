@@ -20,4 +20,3 @@ pub enum SettingsDomainError {
     #[error("Invalid state: {0}")]
     InvalidState(String),
 }
-
