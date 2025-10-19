@@ -42,9 +42,9 @@ impl SettingsRepository for SettingsRepositoryImpl {
         }
 
         // ファイルを読み込む
-        let content = fs::read_to_string(&file_path).await.map_err(|e| {
-            DomainError::IoError(format!("Failed to read settings file: {}", e))
-        })?;
+        let content = fs::read_to_string(&file_path)
+            .await
+            .map_err(|e| DomainError::IoError(format!("Failed to read settings file: {}", e)))?;
 
         // JSONをパース
         let settings: Settings = serde_json::from_str(&content).map_err(|e| {
@@ -70,9 +70,9 @@ impl SettingsRepository for SettingsRepositoryImpl {
         })?;
 
         // ファイルに書き込む
-        fs::write(&file_path, content).await.map_err(|e| {
-            DomainError::IoError(format!("Failed to write settings file: {}", e))
-        })?;
+        fs::write(&file_path, content)
+            .await
+            .map_err(|e| DomainError::IoError(format!("Failed to write settings file: {}", e)))?;
 
         Ok(())
     }

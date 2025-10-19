@@ -12,11 +12,9 @@ pub fn to_graphql_error(e: SettingsError) -> Error {
         SettingsError::InvalidTheme(msg) => Error::new(msg).extend_with(|_, ext| {
             ext.set("code", "INVALID_THEME");
         }),
-        SettingsError::InvalidDatabaseDirectory(msg) => {
-            Error::new(msg).extend_with(|_, ext| {
-                ext.set("code", "INVALID_DATABASE_DIRECTORY");
-            })
-        }
+        SettingsError::InvalidDatabaseDirectory(msg) => Error::new(msg).extend_with(|_, ext| {
+            ext.set("code", "INVALID_DATABASE_DIRECTORY");
+        }),
         SettingsError::ParseError(e) => {
             Error::new(format!("Parse error: {}", e)).extend_with(|_, ext| {
                 ext.set("code", "PARSE_ERROR");
@@ -29,4 +27,3 @@ pub fn to_graphql_error(e: SettingsError) -> Error {
         }
     }
 }
-
