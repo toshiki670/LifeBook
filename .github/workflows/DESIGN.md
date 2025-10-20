@@ -48,6 +48,7 @@ on:
 **目的**: コードの品質とスタイルをチェック
 
 **動作フロー**:
+
 ```
 1. リポジトリをチェックアウト (fetch-depth: 0)
 2. mainブランチをフェッチ
@@ -63,6 +64,7 @@ on:
 ```
 
 **lint-staged対応**:
+
 ```json
 "*.{ts,tsx,js,jsx,json,jsonc,md}": [
   "biome format --write --no-errors-on-unmatched",
@@ -71,6 +73,7 @@ on:
 ```
 
 **コマンド**:
+
 - `pnpm biome format --no-errors-on-unmatched <差分ファイル>`
 - `pnpm biome check --no-errors-on-unmatched <差分ファイル>`
 
@@ -79,6 +82,7 @@ on:
 **目的**: TypeScriptの型チェック
 
 **動作フロー**:
+
 ```
 1. リポジトリをチェックアウト (fetch-depth: 0)
 2. mainブランチをフェッチ
@@ -92,6 +96,7 @@ on:
 ```
 
 **lint-staged対応**:
+
 ```json
 "src/**/*": [
   "bash -c 'pnpm run typecheck'"
@@ -99,6 +104,7 @@ on:
 ```
 
 **コマンド**:
+
 - `pnpm typecheck` (全体チェック)
 
 **注意**: TypeScriptの型チェックは差分ファイルのみでは不十分なため、src/配下に変更がある場合は全体をチェックします。
@@ -134,11 +140,13 @@ env:
 **目的**: Rustコードのフォーマットチェック
 
 **実行環境**:
+
 - タイムアウト: 5分
 - ツールチェーン: stable
 - コンポーネント: rustfmt
 
 **動作フロー**:
+
 ```
 1. リポジトリをチェックアウト (fetch-depth: 0)
 2. mainブランチをフェッチ
@@ -149,6 +157,7 @@ env:
 ```
 
 **lint-staged対応**:
+
 ```json
 "src-tauri/**/*": [
   "bash -c 'cd src-tauri && cargo fmt --all'"
@@ -156,6 +165,7 @@ env:
 ```
 
 **コマンド**:
+
 - `cargo fmt --all --check`
 
 #### 2. Clippy Lint
@@ -163,11 +173,13 @@ env:
 **目的**: Rustコードの静的解析
 
 **実行環境**:
+
 - タイムアウト: 10分
 - ツールチェーン: stable
 - コンポーネント: clippy
 
 **動作フロー**:
+
 ```
 1. リポジトリをチェックアウト (fetch-depth: 0)
 2. mainブランチをフェッチ
@@ -179,6 +191,7 @@ env:
 ```
 
 **lint-staged対応**:
+
 ```json
 "src-tauri/**/*": [
   "bash -c 'cd src-tauri && cargo clippy --fix --allow-dirty --allow-staged -- -D warnings'"
@@ -186,9 +199,11 @@ env:
 ```
 
 **コマンド**:
+
 - `cargo clippy --all-targets --all-features -- -D warnings`
 
 **システム依存関係**:
+
 - libwebkit2gtk-4.1-dev
 - build-essential
 - curl, wget, file
@@ -201,10 +216,12 @@ env:
 **目的**: Rustのユニット/統合テスト実行
 
 **実行環境**:
+
 - タイムアウト: 10分
 - ツールチェーン: stable
 
 **動作フロー**:
+
 ```
 1. リポジトリをチェックアウト (fetch-depth: 0)
 2. mainブランチをフェッチ
@@ -216,6 +233,7 @@ env:
 ```
 
 **コマンド**:
+
 - `cargo test --workspace --verbose`
 
 **注意**: src-tauri/配下に変更がある場合、依存関係の変更により他のクレートに影響がある可能性があるため、ワークスペース全体のテストを実行します。
@@ -231,6 +249,7 @@ env:
 **不採用**: 外部アクション (tj-actions/changed-files)
 
 **理由**:
+
 - セキュリティ: 外部アクション依存を排除（CVE-2025-30066などのリスク回避）
 - シンプル: Gitコマンドのみでシンプルな実装
 - 信頼性: GitHub標準のGitツールに依存
@@ -254,6 +273,7 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 ### 条件付き実行
 
 **パターン1: ファイルリストを使用**
+
 ```yaml
 - name: Get changed files
   id: changed-files
@@ -268,6 +288,7 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 ```
 
 **パターン2: ディレクトリ変更チェック**
+
 ```yaml
 - name: Check directory changes
   id: dir-check
@@ -296,9 +317,7 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
       "biome format --write --no-errors-on-unmatched",
       "biome check --write --no-errors-on-unmatched"
     ],
-    "src/**/*": [
-      "bash -c 'pnpm run typecheck'"
-    ],
+    "src/**/*": ["bash -c 'pnpm run typecheck'"],
     "src-tauri/**/*": [
       "bash -c 'cd src-tauri && cargo clippy --fix --allow-dirty --allow-staged -- -D warnings'",
       "bash -c 'cd src-tauri && cargo fmt --all'"
@@ -309,23 +328,23 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 
 ### CI との対応関係
 
-| lint-staged パターン | CI ワークフロー | チェック内容 |
-|---------------------|---------------|------------|
-| `*.{ts,tsx,js,jsx,json,jsonc,md}` | Frontend CI / Biome | 差分ファイルのみ format & lint |
-| `src/**/*` | Frontend CI / TypeScript | src/変更時に全体チェック |
-| `src-tauri/**/*` | Rust CI / Format | src-tauri/変更時に全体チェック |
-| `src-tauri/**/*` | Rust CI / Clippy | src-tauri/変更時に全体チェック |
-| - | Rust CI / Tests | src-tauri/変更時に全テスト実行 |
+| lint-staged パターン              | CI ワークフロー          | チェック内容                   |
+| --------------------------------- | ------------------------ | ------------------------------ |
+| `*.{ts,tsx,js,jsx,json,jsonc,md}` | Frontend CI / Biome      | 差分ファイルのみ format & lint |
+| `src/**/*`                        | Frontend CI / TypeScript | src/変更時に全体チェック       |
+| `src-tauri/**/*`                  | Rust CI / Format         | src-tauri/変更時に全体チェック |
+| `src-tauri/**/*`                  | Rust CI / Clippy         | src-tauri/変更時に全体チェック |
+| -                                 | Rust CI / Tests          | src-tauri/変更時に全テスト実行 |
 
 ### Pre-commit と CI の違い
 
-| 項目 | Pre-commit (lint-staged) | CI Workflow |
-|-----|-------------------------|-------------|
-| **実行タイミング** | ローカルコミット前 | PR作成/更新時 |
-| **チェック範囲** | ステージングファイル | mainとの差分ファイル |
-| **自動修正** | あり (`--write`, `--fix`) | なし (チェックのみ) |
-| **テスト** | なし | あり (Rust CI) |
-| **目的** | 品質維持 + 自動整形 | 品質検証 |
+| 項目               | Pre-commit (lint-staged)  | CI Workflow          |
+| ------------------ | ------------------------- | -------------------- |
+| **実行タイミング** | ローカルコミット前        | PR作成/更新時        |
+| **チェック範囲**   | ステージングファイル      | mainとの差分ファイル |
+| **自動修正**       | あり (`--write`, `--fix`) | なし (チェックのみ)  |
+| **テスト**         | なし                      | あり (Rust CI)       |
+| **目的**           | 品質維持 + 自動整形       | 品質検証             |
 
 ---
 
@@ -333,17 +352,18 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 
 ### タイムアウト設定
 
-| ジョブ | タイムアウト | 理由 |
-|-------|------------|------|
-| Frontend / Biome | デフォルト | 高速 (数秒) |
-| Frontend / TypeScript | デフォルト | 高速 (数秒〜数十秒) |
-| Rust / Format | 5分 | 高速だが余裕を持たせる |
-| Rust / Clippy | 10分 | ビルド時間を考慮 |
-| Rust / Tests | 10分 | テスト実行時間を考慮 |
+| ジョブ                | タイムアウト | 理由                   |
+| --------------------- | ------------ | ---------------------- |
+| Frontend / Biome      | デフォルト   | 高速 (数秒)            |
+| Frontend / TypeScript | デフォルト   | 高速 (数秒〜数十秒)    |
+| Rust / Format         | 5分          | 高速だが余裕を持たせる |
+| Rust / Clippy         | 10分         | ビルド時間を考慮       |
+| Rust / Tests          | 10分         | テスト実行時間を考慮   |
 
 ### キャッシュ戦略
 
 **Node.js依存関係**:
+
 ```yaml
 - uses: actions/setup-node@v4
   with:
@@ -351,6 +371,7 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 ```
 
 **Rustコンパイル成果物**:
+
 ```yaml
 - uses: actions-rust-lang/setup-rust-toolchain@v1
   with:
@@ -372,12 +393,13 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 **原因**: `fetch-depth: 0` が設定されていない、または mainブランチのフェッチが失敗
 
 **解決策**:
+
 ```yaml
 - uses: actions/checkout@v4
   with:
-    fetch-depth: 0  # 全履歴をフェッチ
+    fetch-depth: 0 # 全履歴をフェッチ
 
-- run: git fetch origin main:main  # mainブランチを明示的にフェッチ
+- run: git fetch origin main:main # mainブランチを明示的にフェッチ
 ```
 
 ### 問題: Biome が差分ファイルを検出しない
@@ -385,6 +407,7 @@ git diff --name-only origin/main...HEAD | grep -q '^src-tauri/'
 **原因**: grep がマッチしない場合にエラーを返す
 
 **解決策**:
+
 ```bash
 # || echo "" でエラーを抑制
 BIOME_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.(ts|tsx|js|jsx)$' | tr '\n' ' ' || echo "")
@@ -395,6 +418,7 @@ BIOME_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.(ts|tsx|js|js
 **原因**: Tauri に必要なシステムライブラリが不足
 
 **解決策**: 必要なパッケージをすべてインストール
+
 ```yaml
 - run: |
     sudo apt-get update
@@ -422,6 +446,7 @@ BIOME_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.(ts|tsx|js|js
 ### Frontend テスト
 
 将来的にフロントエンドのユニットテスト/E2Eテストを追加予定：
+
 - Vitest/Jest によるユニットテスト
 - Playwright/Cypress によるE2Eテスト
 
@@ -445,4 +470,3 @@ BIOME_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.(ts|tsx|js|js
   - Gitコマンドによる差分取得
   - Stableツールチェーン採用
   - タイムアウト調整
-
