@@ -1,1 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# nodebrewとpnpmのパスを追加
+export PATH="/Users/t/.nodebrew/current/bin:/Users/t/Library/pnpm:$PATH"
+
 pnpm exec lint-staged
