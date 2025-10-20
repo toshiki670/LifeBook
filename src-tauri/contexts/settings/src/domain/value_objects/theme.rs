@@ -5,26 +5,20 @@ use strum::{AsRefStr, Display, EnumString};
 
 /// テーマのValue Object
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    Eq,
-    Hash,
-    Serialize,
-    Deserialize,
-    EnumString,
-    AsRefStr,
-    Display,
-    Default,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
 )]
 #[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase", ascii_case_insensitive)]
 pub enum Theme {
     Light,
     Dark,
-    #[default]
     System,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self::System
+    }
 }
 
 #[cfg(test)]
