@@ -9,6 +9,11 @@ on:
       - "Cargo.lock"
       - ".github/workflows/rust.yml"
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_BUILD_JOBS: 4
+
 jobs:
   format:
     name: Format Check
@@ -37,7 +42,7 @@ jobs:
         if: steps.tauri-check.outputs.tauri_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           components: rustfmt
           cache-workspaces: src-tauri
 
@@ -49,7 +54,7 @@ jobs:
   clippy:
     name: Clippy Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -86,7 +91,7 @@ jobs:
         if: steps.tauri-check.outputs.tauri_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           components: clippy
           cache-workspaces: src-tauri
 
@@ -98,7 +103,7 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -135,7 +140,7 @@ jobs:
         if: steps.tauri-check.outputs.tauri_changed == 'true'
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           cache-workspaces: src-tauri
 
       - name: Run tests
