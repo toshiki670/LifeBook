@@ -5,11 +5,23 @@ use strum::{AsRefStr, Display, EnumString};
 
 /// 言語のValue Object
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, EnumString, AsRefStr, Display,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    EnumString,
+    AsRefStr,
+    Display,
+    Default,
 )]
 #[serde(rename_all = "lowercase")]
 #[strum(ascii_case_insensitive)]
 pub enum Language {
+    #[default]
     #[serde(rename = "ja")]
     #[strum(serialize = "ja")]
     Japanese,
@@ -23,12 +35,6 @@ pub enum Language {
     // #[serde(rename = "ko")]
     // #[strum(serialize = "ko")]
     // Korean,
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Self::Japanese
-    }
 }
 
 #[cfg(test)]
