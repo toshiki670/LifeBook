@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "DEBUG=chokidar:* NODE_OPTIONS='--trace-warnings' vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
