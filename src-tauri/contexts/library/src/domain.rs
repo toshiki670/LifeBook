@@ -1,5 +1,5 @@
 // Library Domain Layer
 
-pub(crate) mod entities;
-pub(crate) mod errors;
-pub(crate) mod repositories;
+pub mod entities;
+pub mod errors;
+pub mod repositories;

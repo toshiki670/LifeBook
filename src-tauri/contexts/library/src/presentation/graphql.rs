@@ -1,6 +1,6 @@
 // Presentation Layer - Library GraphQL Module
 
-pub(crate) mod error_ext;
+mod error_ext;
 pub mod mutations;
 pub mod queries;
 
