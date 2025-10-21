@@ -1,7 +1,7 @@
 // Library Domain Layer - Book エンティティ
 
+use crate::domain::errors::DomainError;
 use chrono::Datelike;
-use shared::domain::errors::DomainError;
 
 /// Book エンティティ（ビジネスルールを持つドメインモデル）
 #[derive(Debug, Clone, PartialEq)]

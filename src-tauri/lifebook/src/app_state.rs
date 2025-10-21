@@ -1,6 +1,6 @@
 // Application State - 依存性注入コンテナ
 
-use library::{BookRepositoryImpl, BookService};
+use library::{BookService, build_book_service};
 use sea_orm::DatabaseConnection;
 use settings::{SettingsService, build_settings_service};
 use std::path::PathBuf;
@@ -14,11 +14,10 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(db: DatabaseConnection, config_dir: PathBuf, default_db_dir: PathBuf) -> Self {
-        // Library Context
-        let book_repo = Arc::new(BookRepositoryImpl::new(db));
-        let book_service = Arc::new(BookService::new(book_repo));
+        // Library Context（統合ヘルパー関数）
+        let book_service = build_book_service(db);
 
-        // Settings Context
+        // Settings Context（統合ヘルパー関数）
         let settings_service = build_settings_service(config_dir, default_db_dir);
 
         Self {

@@ -2488,7 +2488,8 @@ dependencies = [
  "chrono",
  "entity",
  "sea-orm",
- "shared",
+ "serde",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
