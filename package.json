@@ -12,7 +12,10 @@
     "lint": "biome check ./src",
     "lint:fix": "biome check --write ./src",
     "format": "biome format --write ./src",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sync-version": "node scripts/sync-version.js",
+    "prebuild": "pnpm sync-version",
+    "predev": "pnpm sync-version"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
