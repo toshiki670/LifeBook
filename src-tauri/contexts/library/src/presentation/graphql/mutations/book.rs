@@ -1,6 +1,7 @@
 // Presentation Layer - Library Book GraphQL Mutation
 
 use crate::application::{dto::book::BookDto, services::book::BookService};
+use crate::presentation::graphql::to_graphql_error;
 use async_graphql::*;
 use std::sync::Arc;
 
@@ -25,7 +26,7 @@ impl BookMutation {
         book_service
             .create_book(title, author, description, published_year)
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// 本を更新
@@ -45,7 +46,7 @@ impl BookMutation {
         book_service
             .update_book(id, title, author, description, published_year)
             .await
-            .map_err(|e| Error::new(e.to_string()))
+            .map_err(to_graphql_error)
     }
 
     /// 本を削除
@@ -57,7 +58,7 @@ impl BookMutation {
         book_service
             .delete_book(id)
             .await
-            .map_err(|e| Error::new(e.to_string()))?;
+            .map_err(to_graphql_error)?;
 
         Ok(true)
     }

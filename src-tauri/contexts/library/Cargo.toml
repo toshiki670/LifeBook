@@ -12,11 +12,12 @@ name = "library"
 path = "src/lib.rs"
 
 [dependencies]
-shared = { path = "../shared" }
 entity = { path = "../../entity" }
 async-graphql = { workspace = true }
 async-trait = { workspace = true }
 chrono = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
 sea-orm = { workspace = true, features = [
   "sqlx-sqlite",
   "runtime-tokio-rustls",

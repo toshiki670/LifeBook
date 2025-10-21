@@ -1,10 +1,10 @@
 // Library Infrastructure Layer - Book リポジトリ実装
 
+use crate::domain::errors::DomainError;
 use crate::domain::{entities::book::Book, repositories::book::BookRepository};
 use async_trait::async_trait;
 use entity::book;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, NotSet, Set, entity::prelude::*};
-use shared::domain::errors::DomainError;
 
 /// BookRepository の SeaORM実装
 pub struct BookRepositoryImpl {

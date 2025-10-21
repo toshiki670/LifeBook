@@ -1,14 +1,13 @@
 // Library Context - 図書管理の境界づけられたコンテキスト
 
-pub mod application;
-pub mod domain;
-pub mod infrastructure;
-pub mod presentation;
+pub(crate) mod application;
+pub(crate) mod domain;
+pub(crate) mod infrastructure;
+pub(crate) mod presentation;
 
-// Re-export for convenience
-pub use application::dto::book::BookDto;
-pub use application::services::book::BookService;
-pub use domain::entities::book::Book;
-pub use domain::repositories::book::BookRepository;
-pub use infrastructure::repositories::book::BookRepositoryImpl;
+// Public API - Presentation層のみ公開
 pub use presentation::graphql::{BookMutation, BookQuery};
+pub use presentation::integration::build_book_service;
+
+// Type exports for type annotations (opaque to external users)
+pub use application::services::book::BookService;

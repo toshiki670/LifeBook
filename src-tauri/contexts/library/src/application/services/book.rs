@@ -1,8 +1,8 @@
 // Library Application Layer - Book アプリケーションサービス
 
 use crate::application::dto::book::BookDto;
+use crate::application::errors::ApplicationError;
 use crate::domain::{entities::book::Book, repositories::book::BookRepository};
-use shared::application::errors::ApplicationError;
 use std::sync::Arc;
 
 /// Book管理のユースケースを実装するサービス

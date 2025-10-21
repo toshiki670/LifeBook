@@ -1,8 +1,8 @@
 // Library Domain Layer - Book リポジトリインターフェース
 
 use crate::domain::entities::book::Book;
+use crate::domain::errors::DomainError;
 use async_trait::async_trait;
-use shared::domain::errors::DomainError;
 
 /// Book リポジトリのインターフェース
 /// インフラ層がこのtraitを実装する

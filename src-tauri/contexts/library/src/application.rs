@@ -1,4 +1,5 @@
 // Library Application Layer
 
-pub mod dto;
-pub mod services;
+pub(crate) mod dto;
+pub(crate) mod errors;
+pub(crate) mod services;
