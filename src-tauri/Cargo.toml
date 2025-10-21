@@ -5,7 +5,6 @@ members = [
   "entity",
   "contexts/library",
   "contexts/settings",
-  "contexts/shared",
 ]
 resolver = "2"
 
