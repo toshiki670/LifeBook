@@ -40,7 +40,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.changed-files.outputs.has_biome_files == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: "pnpm"
@@ -87,7 +87,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.ts-check.outputs.ts_changed == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "20"
           cache: "pnpm"
