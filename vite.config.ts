@@ -4,39 +4,18 @@ import { defineConfig } from "vite"
 import tsconfigPaths from "vite-tsconfig-paths"
 
 // Set chokidar environment variables to avoid EMFILE errors on macOS
-// // @ts-expect-error process is a nodejs global
-// process.env.CHOKIDAR_USEPOLLING = 'true';
-// // @ts-expect-error process is a nodejs global
-// process.env.CHOKIDAR_INTERVAL = '300';
+// Required because multiple watchers (Vite + React Router + Cargo) exceed file descriptor limit
+// @ts-expect-error process is a nodejs global
+process.env.CHOKIDAR_USEPOLLING = "true"
+// @ts-expect-error process is a nodejs global
+process.env.CHOKIDAR_INTERVAL = "300"
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [
-    reactRouter({}),
-    tsconfigPaths(),
-    tailwindcss(),
-    {
-      name: "debug-watch",
-      configureServer(server) {
-        server.watcher.on("ready", () => {
-          const watched = server.watcher.getWatched()
-          const paths = Object.keys(watched)
-          const watchCount = paths.reduce((sum, dir) => sum + watched[dir].length, 0)
-          console.log("\n🔍 [DEBUG] Vite watcher ready")
-          console.log(`📊 [DEBUG] Watching ${watchCount} files in ${paths.length} directories`)
-          console.log(`📁 [DEBUG] Sample dirs:`, paths.slice(0, 10))
-        })
-
-        server.watcher.on("error", (error: Error) => {
-          console.error("❌ [DEBUG] Watcher error:", error.message)
-          console.error("Stack:", error.stack)
-        })
-      },
-    },
-  ],
+  plugins: [reactRouter({}), tsconfigPaths(), tailwindcss()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -56,7 +35,7 @@ export default defineConfig(async () => ({
       : undefined,
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**", "**/node_modules/**", "**/target/**", "**/.git/**"],
+      ignored: ["**/src-tauri/**"],
     },
   },
 }))

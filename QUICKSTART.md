@@ -116,27 +116,18 @@ pnpm tauri dev
 
 ### macOS: "EMFILE: too many open files" エラー
 
-このエラーは、ファイル監視が大量のファイルディスクリプタを消費するために発生します。
+このエラーは、複数のファイル監視プロセス（Vite + React Router + Cargo）の合計がmacOSのファイルディスクリプタ上限を超えるために発生します。
 
 **解決済み:**
 
-- `vite.config.ts` で chokidar の環境変数を設定済み（`CHOKIDAR_USEPOLLING=true`）
-- これにより、ファイル監視がポーリングモードで動作し、エラーが回避されます
+`vite.config.ts` で以下の環境変数を設定することで対処済みです：
 
-**オプション: watchman の導入（推奨）**
-
-より効率的なファイル監視のために、watchman をインストールすることを推奨します：
-
-```bash
-brew install watchman
+```typescript
+process.env.CHOKIDAR_USEPOLLING = "true"; // ポーリングモードを有効化
+process.env.CHOKIDAR_INTERVAL = "300"; // 300ms間隔でチェック
 ```
 
-watchman は Facebook 製のファイル監視ツールで、CPU/メモリ使用量を削減します。
-
-**技術的な詳細:**
-
-- Viteの設定で不要なディレクトリ（`node_modules`、`target`、`.git`、`.react-router`、`dist`等）を監視対象から除外済み
-- React Router プラグインが独自に chokidar を使用するため、`vite.config.ts` で環境変数を設定
+これにより、Node.js側のファイル監視がポーリングモードで動作し、ファイルディスクリプタの消費を大幅削減しています。
 
 ## 🎯 サンプルデータ
 
