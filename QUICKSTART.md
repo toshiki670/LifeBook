@@ -116,18 +116,11 @@ pnpm tauri dev
 
 ### macOS: "EMFILE: too many open files" エラー
 
-このエラーは、複数のファイル監視プロセス（Vite + React Router + Cargo）の合計がmacOSのファイルディスクリプタ上限を超えるために発生します。
+**このエラーは解決済みです。** プロジェクトの設定で自動的に対処されているため、特別な操作は不要です。
 
-**解決済み:**
+もし古いバージョンからアップデートした場合や、エラーが発生する場合は、最新のコードを pull してください。
 
-`vite.config.ts` で以下の環境変数を設定することで対処済みです：
-
-```typescript
-process.env.CHOKIDAR_USEPOLLING = "true"; // ポーリングモードを有効化
-process.env.CHOKIDAR_INTERVAL = "300"; // 300ms間隔でチェック
-```
-
-これにより、Node.js側のファイル監視がポーリングモードで動作し、ファイルディスクリプタの消費を大幅削減しています。
+技術的な詳細については [PR #31](https://github.com/toshiki670/LifeBook/pull/31) を参照してください。
 
 ## 🎯 サンプルデータ
 
