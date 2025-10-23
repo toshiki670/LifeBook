@@ -1,10 +1,5 @@
 # 新しい本を作成
-mutation CreateBook(
-  $title: String!
-  $author: String
-  $description: String
-  $publishedYear: Int
-) {
+mutation CreateBook($title: String!, $author: String, $description: String, $publishedYear: Int) {
   library {
     createBook(
       title: $title
@@ -52,4 +47,3 @@ mutation DeleteBook($id: Int!) {
     deleteBook(id: $id)
   }
 }
-

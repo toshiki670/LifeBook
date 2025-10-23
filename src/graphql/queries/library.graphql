@@ -23,4 +23,3 @@ query GetBook($id: Int!) {
     }
   }
 }
-
