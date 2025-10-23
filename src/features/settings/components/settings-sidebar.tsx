@@ -22,9 +22,6 @@ export function SettingsSidebar({
 }: SettingsSidebarProps) {
   return (
     <nav className={cn("flex flex-col space-y-1 border-r pr-4", className)}>
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold text-muted-foreground px-3">設定</h3>
-      </div>
       {sections.map((section) => (
         <button
           key={section.id}
