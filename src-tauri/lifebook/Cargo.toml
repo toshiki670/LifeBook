@@ -4,6 +4,7 @@ version.workspace = true
 description = "A Tauri App"
 authors = ["you"]
 edition.workspace = true
+default-run = "lifebook"
 
 [lints]
 workspace = true
