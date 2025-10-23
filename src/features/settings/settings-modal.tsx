@@ -41,7 +41,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
             />
           </div>
 
-          {/* Right Content - 75% */}
+          {/* Right Content - 75% - Design Research */}
           <div className="flex-1 overflow-y-auto p-6">
             {selectedSection === "general" && <GeneralSettingsForm />}
             {selectedSection === "appearance" && <AppearanceSettingsForm />}
