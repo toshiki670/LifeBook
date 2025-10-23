@@ -43,7 +43,7 @@ export function GeneralSettingsForm() {
             onValueChange={handleLanguageChange}
             disabled={loadingGeneral}
           >
-            <SelectTrigger id="language" className="w-full max-w-xs">
+            <SelectTrigger id="language" className="w-full">
               <SelectValue placeholder="言語を選択" />
             </SelectTrigger>
             <SelectContent>
