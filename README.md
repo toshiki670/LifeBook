@@ -53,7 +53,7 @@ The backend is organized into multiple Rust crates:
 - **`lifebook`**: Main Tauri application
   - Integrates all contexts and provides the Tauri runtime
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md), [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md), and [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) for detailed documentation.
+See [ARCHITECTURE.md](./doc/architecture/ARCHITECTURE.md), [GRAPHQL_GUIDE.md](./doc/development/GRAPHQL_GUIDE.md), and [CODING_GUIDELINES.md](./doc/development/CODING_GUIDELINES.md) for detailed documentation.
 
 ## 🛠️ Development
 
@@ -106,18 +106,19 @@ LifeBook/
 │   │       ├── lib.rs           # Entry point
 │   │       └── main.rs          # Binary entry
 │   └── Cargo.toml               # Workspace definition
-├── ARCHITECTURE.md              # Architecture documentation
-├── GRAPHQL_GUIDE.md             # GraphQL integration guide
-└── CODING_GUIDELINES.md         # DDD architecture & coding standards
+└── doc/                         # Documentation
+    ├── architecture/            # Architecture documentation
+    ├── development/             # Development guides and coding standards
+    └── plan/                    # Plan documents (Cursor Plan mode)
 ```
 
 ## 🎓 Learning Resources
 
 For a comprehensive guide on the GraphQL integration, refer to:
 
-- [GRAPHQL_GUIDE.md](./GRAPHQL_GUIDE.md) - Complete guide with examples
-- [CODING_GUIDELINES.md](./CODING_GUIDELINES.md) - Project coding guidelines and best practices
-- [QUICKSTART.md](./QUICKSTART.md) - Quick start guide
+- [GRAPHQL_GUIDE.md](./doc/development/GRAPHQL_GUIDE.md) - Complete guide with examples
+- [CODING_GUIDELINES.md](./doc/development/CODING_GUIDELINES.md) - Project coding guidelines and best practices
+- [QUICKSTART.md](./doc/development/QUICKSTART.md) - Quick start guide
 
 ## 📝 Example GraphQL Operations
 
