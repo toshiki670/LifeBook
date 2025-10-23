@@ -18,9 +18,12 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig(async () => ({
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],
 
-  // Optimize dependencies for Apollo Client
+  // Optimize dependencies for Apollo Client v4
   optimizeDeps: {
-    include: ["@apollo/client", "@apollo/client/react"],
+    include: ["@apollo/client"],
+  },
+  ssr: {
+    noExternal: ["@apollo/client"],
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
