@@ -1,3 +1,4 @@
+import { useMutation, useQuery } from "@apollo/client/react"
 import React from "react"
 import { Link, useLoaderData } from "react-router"
 import { AppHeader } from "~/components/common/app-header"
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { useCreateBookMutation, useDeleteBookMutation, useGetBooksQuery } from "~/generated/graphql"
+import { CreateBookDocument, DeleteBookDocument, GetBooksDocument } from "~/generated/graphql"
 import { getDbStatus } from "~/lib/graphql"
 import type { Route } from "./+types/page"
 
@@ -25,9 +26,9 @@ export async function clientLoader() {
 
 export default function Books() {
   const { dbStatus } = useLoaderData<typeof clientLoader>()
-  const { data, loading, error, refetch } = useGetBooksQuery()
-  const [createBook, { loading: creating }] = useCreateBookMutation()
-  const [deleteBook, { loading: deleting }] = useDeleteBookMutation()
+  const { data, loading, error, refetch } = useQuery(GetBooksDocument)
+  const [createBook, { loading: creating }] = useMutation(CreateBookDocument)
+  const [deleteBook, { loading: deleting }] = useMutation(DeleteBookDocument)
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
