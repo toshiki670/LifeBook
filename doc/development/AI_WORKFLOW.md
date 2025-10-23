@@ -22,6 +22,7 @@ git checkout -b <branch-type>/<feature-name>
 - `chore/` - ビルドプロセスやツールの変更
 
 例:
+
 ```bash
 git checkout -b docs/organize-documentation
 git checkout -b feat/add-user-authentication
@@ -41,6 +42,7 @@ YYYY-MM-DD-<feature-or-task-name>.plan.md
 ```
 
 例:
+
 - `2025-10-23-organize-documentation.plan.md`
 - `2025-10-24-add-user-authentication.plan.md`
 
@@ -65,7 +67,7 @@ Planファイルには以下の情報を必ず含めてください：
 
 1. [手順1]
 2. [手順2]
-...
+   ...
 
 ## Pull Request
 
@@ -104,6 +106,7 @@ Conventional Commitsに従ってください：
 - `chore:` - ビルドプロセスやツールの変更
 
 例:
+
 ```
 feat: add user authentication system
 docs: organize documentation into doc directory structure
@@ -176,4 +179,3 @@ PR作成後に確認してください：
 
 - [ ] PlanファイルにPRリンクを追加したか？
 - [ ] Planファイルの変更をコミット・プッシュしたか？
-
