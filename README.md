@@ -119,6 +119,7 @@ For a comprehensive guide on the GraphQL integration, refer to:
 - [GRAPHQL_GUIDE.md](./doc/development/GRAPHQL_GUIDE.md) - Complete guide with examples
 - [CODING_GUIDELINES.md](./doc/development/CODING_GUIDELINES.md) - Project coding guidelines and best practices
 - [QUICKSTART.md](./doc/development/QUICKSTART.md) - Quick start guide
+- [AI_WORKFLOW.md](./doc/development/AI_WORKFLOW.md) - AI development workflow and guidelines
 
 ## 📝 Example GraphQL Operations
 
