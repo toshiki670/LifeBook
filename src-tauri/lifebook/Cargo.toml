@@ -17,6 +17,10 @@ workspace = true
 name = "lifebook_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bin]]
+name = "export_schema"
+path = "src/bin/export_schema.rs"
+
 [build-dependencies]
 tauri-build = { workspace = true, features = [] }
 

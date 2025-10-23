@@ -1,0 +1,34 @@
+# 一般設定を更新
+mutation UpdateGeneralSettings($language: String) {
+  settings {
+    updateGeneralSettings(language: $language) {
+      language
+    }
+  }
+}
+
+# 外観設定を更新
+mutation UpdateAppearanceSettings($theme: String) {
+  settings {
+    updateAppearanceSettings(theme: $theme) {
+      theme
+    }
+  }
+}
+
+# データベース設定を更新
+mutation UpdateDatabaseSettings($databaseDirectory: String) {
+  settings {
+    updateDatabaseSettings(databaseDirectory: $databaseDirectory) {
+      databaseDirectory
+    }
+  }
+}
+
+# すべての設定をリセット
+mutation ResetSettings {
+  settings {
+    resetSettings
+  }
+}
+

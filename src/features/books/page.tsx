@@ -1,4 +1,5 @@
-import { Form, Link, useActionData, useLoaderData, useNavigation } from "react-router"
+import React from "react"
+import { Link, useLoaderData } from "react-router"
 import { AppHeader } from "~/components/common/app-header"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
@@ -6,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { createBook, deleteBook, getBooks, getDbStatus } from "~/lib/graphql"
+import { useCreateBookMutation, useDeleteBookMutation, useGetBooksQuery } from "~/generated/graphql"
+import { getDbStatus } from "~/lib/graphql"
 import type { Route } from "./+types/page"
 
 export function meta(_: Route.MetaArgs) {
@@ -17,61 +19,60 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export async function clientLoader() {
-  const [booksResponse, dbStatus] = await Promise.all([getBooks(), getDbStatus()])
-
-  if (booksResponse.errors) {
-    throw new Error(booksResponse.errors[0]?.message || "Failed to load books")
-  }
-
-  return {
-    books: booksResponse.data?.books || [],
-    dbStatus,
-  }
+  const dbStatus = await getDbStatus()
+  return { dbStatus }
 }
 
-export async function clientAction({ request }: Route.ClientActionArgs) {
-  const formData = await request.formData()
-  const intent = formData.get("intent")
+export default function Books() {
+  const { dbStatus } = useLoaderData<typeof clientLoader>()
+  const { data, loading, error, refetch } = useGetBooksQuery()
+  const [createBook, { loading: creating }] = useCreateBookMutation()
+  const [deleteBook, { loading: deleting }] = useDeleteBookMutation()
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
-  if (intent === "create") {
+  const books = data?.library?.books || []
+  const isLoading = loading || creating || deleting
+
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+
     const title = formData.get("title") as string
     const author = formData.get("author") as string
     const description = formData.get("description") as string
     const publishedYear = formData.get("publishedYear") as string
 
-    const bookData = {
-      title,
-      author: author || undefined,
-      description: description || undefined,
-      publishedYear: publishedYear ? parseInt(publishedYear, 10) : undefined,
+    try {
+      await createBook({
+        variables: {
+          title,
+          author: author || null,
+          description: description || null,
+          publishedYear: publishedYear ? parseInt(publishedYear, 10) : null,
+        },
+      })
+      setSuccessMessage("本を追加しました")
+      setErrorMessage(null)
+      e.currentTarget.reset()
+      refetch()
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "本の追加に失敗しました")
+      setSuccessMessage(null)
     }
-
-    const response = await createBook(bookData)
-    if (response.errors) {
-      return { success: false, error: response.errors[0]?.message || "Failed to create book" }
-    }
-    return { success: true, message: "本を追加しました" }
   }
 
-  if (intent === "delete") {
-    const id = parseInt(formData.get("id") as string, 10)
-    const response = await deleteBook(id)
-    if (response.errors) {
-      return { success: false, error: response.errors[0]?.message || "Failed to delete book" }
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteBook({ variables: { id } })
+      setSuccessMessage("本を削除しました")
+      setErrorMessage(null)
+      refetch()
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : "本の削除に失敗しました")
+      setSuccessMessage(null)
     }
-    return { success: true, message: "本を削除しました" }
   }
-
-  return { success: false, error: "Unknown action" }
-}
-
-export default function Books() {
-  const { books, dbStatus } = useLoaderData<typeof clientLoader>()
-  const actionData = useActionData<typeof clientAction>()
-  const navigation = useNavigation()
-
-  const isSubmitting = navigation.state === "submitting"
-  const isLoading = navigation.state === "loading"
 
   return (
     <>
@@ -84,15 +85,21 @@ export default function Books() {
           </p>
         </div>
 
-        {actionData?.success === false && actionData.error && (
+        {errorMessage && (
           <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{actionData.error}</AlertDescription>
+            <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
 
-        {actionData?.success && actionData.message && (
+        {successMessage && (
           <Alert className="mb-4">
-            <AlertDescription>{actionData.message}</AlertDescription>
+            <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>データの読み込みに失敗しました: {error.message}</AlertDescription>
           </Alert>
         )}
 
@@ -102,8 +109,7 @@ export default function Books() {
             <CardTitle>新しい本を追加</CardTitle>
           </CardHeader>
           <CardContent>
-            <Form method="post" className="space-y-4">
-              <input type="hidden" name="intent" value="create" />
+            <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="title">
                   タイトル <span className="text-destructive">*</span>
@@ -114,7 +120,7 @@ export default function Books() {
                   type="text"
                   required
                   placeholder="本のタイトル"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -124,7 +130,7 @@ export default function Books() {
                   name="author"
                   type="text"
                   placeholder="著者名"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -134,7 +140,7 @@ export default function Books() {
                   name="description"
                   placeholder="本の説明"
                   rows={3}
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
@@ -144,13 +150,13 @@ export default function Books() {
                   name="publishedYear"
                   type="number"
                   placeholder="2024"
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "追加中..." : "追加"}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {creating ? "追加中..." : "追加"}
               </Button>
-            </Form>
+            </form>
           </CardContent>
         </Card>
 
@@ -160,7 +166,7 @@ export default function Books() {
             <CardTitle>本のリスト</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {loading ? (
               <p className="text-muted-foreground">読み込み中...</p>
             ) : books.length === 0 ? (
               <p className="text-muted-foreground">
@@ -168,38 +174,43 @@ export default function Books() {
               </p>
             ) : (
               <div className="space-y-4">
-                {books.map((book) => (
-                  <Card key={book.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-semibold">{book.title}</h3>
-                          {book.author && (
-                            <p className="text-muted-foreground mt-1">著者: {book.author}</p>
-                          )}
-                          {book.description && <p className="mt-2">{book.description}</p>}
-                          {book.publishedYear && (
-                            <p className="text-muted-foreground text-sm mt-1">
-                              出版年: {book.publishedYear}
-                            </p>
-                          )}
-                        </div>
-                        <Form method="post" className="ml-4">
-                          <input type="hidden" name="intent" value="delete" />
-                          <input type="hidden" name="id" value={book.id} />
+                {books.map(
+                  (book: {
+                    id: number
+                    title: string
+                    author?: string | null
+                    description?: string | null
+                    publishedYear?: number | null
+                  }) => (
+                    <Card key={book.id}>
+                      <CardContent className="pt-6">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold">{book.title}</h3>
+                            {book.author && (
+                              <p className="text-muted-foreground mt-1">著者: {book.author}</p>
+                            )}
+                            {book.description && <p className="mt-2">{book.description}</p>}
+                            {book.publishedYear && (
+                              <p className="text-muted-foreground text-sm mt-1">
+                                出版年: {book.publishedYear}
+                              </p>
+                            )}
+                          </div>
                           <Button
-                            type="submit"
                             variant="destructive"
                             size="sm"
-                            disabled={isSubmitting}
+                            disabled={isLoading}
+                            onClick={() => handleDelete(book.id)}
+                            className="ml-4"
                           >
-                            {isSubmitting ? "削除中..." : "削除"}
+                            {deleting ? "削除中..." : "削除"}
                           </Button>
-                        </Form>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ),
+                )}
               </div>
             )}
           </CardContent>

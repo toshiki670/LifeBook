@@ -287,24 +287,51 @@ async fn execute_graphql(
 
 フロントエンドからGraphQLクエリ文字列を受け取り、実行結果をJSON文字列として返します。
 
-### 8. フロントエンドクライアント (`lib/graphql.ts`)
+### 8. フロントエンドクライアント
+
+#### Apollo Client (`lib/apollo-client.ts`)
+
+Tauri invoke経由でGraphQLクエリを実行するカスタムApollo Clientを使用：
 
 ```typescript
-export async function executeGraphQL<T = any>(
-  query: string
-): Promise<GraphQLResponse<T>> {
-  const result = await invoke<string>("execute_graphql", { query });
-  return JSON.parse(result);
-}
+import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client"
+import { invoke } from "@tauri-apps/api/core"
+
+const tauriLink = new ApolloLink((operation) => {
+  // Tauri invoke経由でGraphQLリクエストを実行
+  return invoke("graphql_request", { request: JSON.stringify(request) })
+})
+
+export const apolloClient = new ApolloClient({
+  link: tauriLink,
+  cache: new InMemoryCache(),
+})
 ```
 
-便利なヘルパー関数も提供：
+#### GraphQL Code Generator
 
-- `getBooks()`: すべての本を取得
-- `getBook(id)`: IDで本を取得
-- `createBook(book)`: 本を作成
-- `updateBook(id, updates)`: 本を更新
-- `deleteBook(id)`: 本を削除
+スキーマから自動生成された型安全なhooksを使用：
+
+```bash
+# スキーマをエクスポート
+pnpm export-schema
+
+# 型とhooksを生成
+pnpm codegen
+```
+
+生成されたhooksの使用例：
+
+```typescript
+import { useGetBooksQuery, useCreateBookMutation } from "~/generated/graphql"
+
+function BooksList() {
+  const { data, loading, error } = useGetBooksQuery()
+  const [createBook] = useCreateBookMutation()
+
+  // 型安全にデータにアクセス
+  const books = data?.library?.books || []
+}
 
 ## 🚀 使い方
 
@@ -512,6 +539,52 @@ interface GraphQLResponse<T> {
       code?: string;
     };
   }>;
+}
+```
+
+## 🔄 開発ワークフロー
+
+### GraphQLスキーマの変更
+
+1. Rust側でスキーマを変更（型、Query、Mutationなど）
+2. スキーマをエクスポート: `pnpm export-schema`
+3. GraphQLクエリファイルを追加/更新: `src/graphql/queries/*.graphql`, `src/graphql/mutations/*.graphql`
+4. 型とhooksを生成: `pnpm codegen`
+5. フロントエンドで生成されたhooksを使用
+
+### 新しいクエリ/ミューテーションの追加
+
+1. `src/graphql/queries/` または `src/graphql/mutations/` に`.graphql`ファイルを作成
+2. GraphQLクエリを記述
+3. `pnpm codegen`を実行して型とhooksを生成
+4. 生成されたhooksをコンポーネントで使用
+
+### 例: 新しいクエリの追加
+
+```graphql
+# src/graphql/queries/library.graphql
+query GetBooksByAuthor($author: String!) {
+  library {
+    books {
+      id
+      title
+      author
+    }
+  }
+}
+```
+
+```bash
+pnpm codegen
+```
+
+```typescript
+// コンポーネントで使用
+import { useGetBooksByAuthorQuery } from "~/generated/graphql"
+
+function AuthorBooks({ author }: { author: string }) {
+  const { data, loading } = useGetBooksByAuthorQuery({ variables: { author } })
+  // ...
 }
 ```
 

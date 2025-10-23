@@ -25,3 +25,7 @@ dist-ssr
 
 # React Router
 .react-router/types
+
+# GraphQL Code Generator
+src/generated/
+schema.graphql

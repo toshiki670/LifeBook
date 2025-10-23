@@ -15,9 +15,12 @@
     "prepare": "husky",
     "sync-version": "node scripts/sync-version.js",
     "prebuild": "pnpm sync-version",
-    "predev": "pnpm sync-version"
+    "predev": "pnpm sync-version",
+    "export-schema": "cd src-tauri && cargo run --bin export_schema",
+    "codegen": "pnpm export-schema && graphql-codegen"
   },
   "dependencies": {
+    "@apollo/client": "^3.14.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
@@ -39,11 +42,16 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.6",
+    "@graphql-codegen/cli": "^6.0.1",
+    "@graphql-codegen/typescript": "^5.0.2",
+    "@graphql-codegen/typescript-operations": "^5.0.2",
+    "@graphql-codegen/typescript-react-apollo": "^4.3.3",
     "@react-router/dev": "^7.9.4",
     "@tailwindcss/vite": "^4.1.14",
     "@tauri-apps/cli": "^2.8.4",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "graphql": "^16.11.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.4",
     "tailwindcss": "^4.1.14",
