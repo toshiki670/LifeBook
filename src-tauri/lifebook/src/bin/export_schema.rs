@@ -1,23 +1,10 @@
-use lifebook_lib::{app_state::AppState, database::setup_database, graphql_schema::build_schema};
-use std::env;
+use lifebook_lib::graphql_schema::build_schema_without_data;
 use std::fs;
 use std::path::Path;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // データベース接続を確立
-    let db = setup_database().await?;
-
-    // 設定ディレクトリとデータベースディレクトリを一時的なパスに設定
-    // スキーマエクスポートには実際のパスは不要
-    let config_dir = env::temp_dir().join("lifebook_schema_export_config");
-    let default_db_dir = env::temp_dir().join("lifebook_schema_export_db");
-
-    // AppStateを構築
-    let app_state = AppState::new(db, config_dir, default_db_dir);
-
-    // スキーマを構築
-    let schema = build_schema(app_state);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // スキーマを構築（データベース接続不要）
+    let schema = build_schema_without_data();
 
     // SDL形式でエクスポート
     let sdl = schema.sdl();
