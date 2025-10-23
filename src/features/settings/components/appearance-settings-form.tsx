@@ -58,7 +58,7 @@ export function AppearanceSettingsForm() {
             onValueChange={handleThemeChange}
             disabled={loadingAppearance}
           >
-            <SelectTrigger id="theme" className="w-full max-w-xs">
+            <SelectTrigger id="theme" className="w-full">
               <SelectValue placeholder="テーマを選択" />
             </SelectTrigger>
             <SelectContent>
