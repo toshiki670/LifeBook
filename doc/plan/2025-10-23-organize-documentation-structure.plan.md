@@ -36,9 +36,16 @@ doc/
 3. doc/plan/README.md を作成（ディレクトリの目的を説明）
 4. ルートのREADME.mdを更新（ドキュメント構造への参照を追加）
 
-### To-dos
+## Pull Request
 
-- [ ] docディレクトリと各サブディレクトリ（architecture, development, plan）を作成
-- [ ] 既存ドキュメントを適切なディレクトリに移動
-- [ ] doc/plan/README.mdを作成してディレクトリの目的を説明
-- [ ] ルートのREADME.mdを更新してドキュメント構造への参照を追加
+- PR: https://github.com/toshiki670/LifeBook/pull/37
+- ブランチ: `docs/organize-documentation`
+- ステータス: Open
+
+## 完了条件
+
+- [x] docディレクトリと各サブディレクトリ（architecture, development, plan）を作成
+- [x] 既存ドキュメントを適切なディレクトリに移動
+- [x] doc/plan/README.mdを作成してディレクトリの目的を説明
+- [x] ルートのREADME.mdを更新してドキュメント構造への参照を追加
+- [x] PlanファイルにPRリンクを追加
