@@ -550,7 +550,18 @@ interface GraphQLResponse<T> {
 2. スキーマをエクスポート: `pnpm export-schema`
 3. GraphQLクエリファイルを追加/更新: `src/graphql/queries/*.graphql`, `src/graphql/mutations/*.graphql`
 4. 型とhooksを生成: `pnpm codegen`
-5. フロントエンドで生成されたhooksを使用
+5. **重要**: 生成されたファイルをコミットする
+   ```bash
+   git add schema.graphql src/generated/
+   git commit -m "feat: update GraphQL schema and generated types"
+   ```
+6. フロントエンドで生成されたhooksを使用
+
+### 生成ファイルの管理
+
+- `schema.graphql`と`src/generated/`はリポジトリにコミットされます
+- これによりCI/CDでRust環境のセットアップが不要になり、高速化されます
+- スキーマ変更時は必ず生成ファイルもコミットしてください
 
 ### 新しいクエリ/ミューテーションの追加
 
