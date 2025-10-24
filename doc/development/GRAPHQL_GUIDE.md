@@ -294,18 +294,18 @@ async fn execute_graphql(
 Tauri invoke経由でGraphQLクエリを実行するカスタムApollo Clientを使用：
 
 ```typescript
-import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client"
-import { invoke } from "@tauri-apps/api/core"
+import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
+import { invoke } from "@tauri-apps/api/core";
 
 const tauriLink = new ApolloLink((operation) => {
   // Tauri invoke経由でGraphQLリクエストを実行
-  return invoke("graphql_request", { request: JSON.stringify(request) })
-})
+  return invoke("graphql_request", { request: JSON.stringify(request) });
+});
 
 export const apolloClient = new ApolloClient({
   link: tauriLink,
   cache: new InMemoryCache(),
-})
+});
 ```
 
 #### GraphQL Code Generator
@@ -322,7 +322,7 @@ pnpm codegen
 
 生成されたhooksの使用例：
 
-```typescript
+````typescript
 import { useGetBooksQuery, useCreateBookMutation } from "~/generated/graphql"
 
 function BooksList() {
@@ -339,7 +339,7 @@ function BooksList() {
 
 ```bash
 pnpm tauri dev
-```
+````
 
 ### ビルド
 
@@ -591,10 +591,10 @@ pnpm codegen
 
 ```typescript
 // コンポーネントで使用
-import { useGetBooksByAuthorQuery } from "~/generated/graphql"
+import { useGetBooksByAuthorQuery } from "~/generated/graphql";
 
 function AuthorBooks({ author }: { author: string }) {
-  const { data, loading } = useGetBooksByAuthorQuery({ variables: { author } })
+  const { data, loading } = useGetBooksByAuthorQuery({ variables: { author } });
   // ...
 }
 ```
