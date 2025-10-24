@@ -1,6 +1,6 @@
 overwrite: true
 schema: "schema.graphql"
-documents: "src/**/*.graphql"  # documentsを有効化
+documents: "src/**/*.graphql" # documentsを有効化
 generates:
   src/generated/:
     preset: "client"
