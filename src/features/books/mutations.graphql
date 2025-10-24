@@ -1,0 +1,51 @@
+mutation BooksCreate(
+  $title: String!
+  $author: String
+  $description: String
+  $publishedYear: Int
+) {
+  library {
+    createBook(
+      title: $title
+      author: $author
+      description: $description
+      publishedYear: $publishedYear
+    ) {
+      id
+      title
+      author
+      description
+      publishedYear
+    }
+  }
+}
+
+mutation BooksUpdate(
+  $id: Int!
+  $title: String
+  $author: String
+  $description: String
+  $publishedYear: Int
+) {
+  library {
+    updateBook(
+      id: $id
+      title: $title
+      author: $author
+      description: $description
+      publishedYear: $publishedYear
+    ) {
+      id
+      title
+      author
+      description
+      publishedYear
+    }
+  }
+}
+
+mutation BooksDelete($id: Int!) {
+  library {
+    deleteBook(id: $id)
+  }
+}

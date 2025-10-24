@@ -1,0 +1,23 @@
+mutation SettingsUpdateGeneral($language: String!) {
+  settings {
+    updateGeneralSettings(language: $language) {
+      language
+    }
+  }
+}
+
+mutation SettingsUpdateAppearance($theme: String!) {
+  settings {
+    updateAppearanceSettings(theme: $theme) {
+      theme
+    }
+  }
+}
+
+mutation SettingsUpdateDatabase($databaseDirectory: String!) {
+  settings {
+    updateDatabaseSettings(databaseDirectory: $databaseDirectory) {
+      databaseDirectory
+    }
+  }
+}

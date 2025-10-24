@@ -1,0 +1,23 @@
+query SettingsGetGeneral {
+  settings {
+    generalSettings {
+      language
+    }
+  }
+}
+
+query SettingsGetAppearance {
+  settings {
+    appearanceSettings {
+      theme
+    }
+  }
+}
+
+query SettingsGetDatabase {
+  settings {
+    databaseSettings {
+      databaseDirectory
+    }
+  }
+}

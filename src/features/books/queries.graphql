@@ -1,0 +1,23 @@
+query BooksGetAll {
+  library {
+    books {
+      id
+      title
+      author
+      description
+      publishedYear
+    }
+  }
+}
+
+query BooksGetOne($id: Int!) {
+  library {
+    book(id: $id) {
+      id
+      title
+      author
+      description
+      publishedYear
+    }
+  }
+}

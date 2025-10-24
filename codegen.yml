@@ -1,14 +1,10 @@
 overwrite: true
 schema: "schema.graphql"
-documents: null # ドキュメントファイル不要 - 完全自動生成
+documents: "src/**/*.graphql"  # documentsを有効化
 generates:
-  generated/:
+  src/generated/:
     preset: "client"
     config:
       useTypeImports: true
       skipTypename: false
       documentMode: "documentNode"
-      # スキーマから自動で全クエリ/ミューテーションを生成
-      generateAllOperations: true
-      # 生成する操作の種類を指定
-      generateOperations: ["query", "mutation"]

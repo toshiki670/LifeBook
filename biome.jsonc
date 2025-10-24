@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/gen/schemas", "!generated", "!schema.graphql"]
+    "includes": ["**", "!**/gen/schemas", "!src/generated", "!schema.graphql"]
   },
   "formatter": {
     "enabled": true,
