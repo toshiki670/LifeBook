@@ -27,5 +27,6 @@ dist-ssr
 .react-router/types
 
 # GraphQL Code Generator
-src/generated/
-schema.graphql
+# Note: Generated files are committed to ensure CI stability
+# src/generated/
+# schema.graphql
