@@ -1,6 +1,6 @@
 overwrite: true
 schema: "schema.graphql"
-documents: null  # ドキュメントファイル不要 - 完全自動生成
+documents: null # ドキュメントファイル不要 - 完全自動生成
 generates:
   generated/:
     preset: "client"
