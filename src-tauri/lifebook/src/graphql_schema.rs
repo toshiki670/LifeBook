@@ -48,3 +48,9 @@ pub fn build_schema(app_state: AppState) -> AppSchema {
         .data(app_state.settings_service)
         .finish()
 }
+
+/// スキーマ定義のみを構築（データなし）
+/// スキーマエクスポート用 - データベース接続や設定ディレクトリ不要
+pub fn build_schema_without_data() -> AppSchema {
+    Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish()
+}
