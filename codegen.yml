@@ -19,3 +19,5 @@ generates:
       useTypeImports: true
       skipTypename: false
       documentMode: "documentNode"
+      fragmentMasking: true
+      mask: true

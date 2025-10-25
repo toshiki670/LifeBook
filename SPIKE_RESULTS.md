@@ -1,9 +1,11 @@
 # near-operation-file パターン検証結果
 
 ## 検証日
+
 2025-10-25
 
 ## 概要
+
 GraphQL Code Generatorの`near-operation-file`プリセットを使用して、クエリファイルと同じディレクトリに型定義を生成するパターンを検証しました。
 
 ## 実装結果
@@ -31,6 +33,7 @@ src/
 ### 設定変更
 
 #### codegen.yml
+
 ```yaml
 generates:
   # 共通の型定義を生成
@@ -51,17 +54,27 @@ generates:
 #### インポートの変化
 
 **変更前 (client プリセット):**
+
 ```typescript
-import { BooksCreateDocument, BooksDeleteDocument, BooksGetAllDocument } from "~/generated/graphql"
+import {
+  BooksCreateDocument,
+  BooksDeleteDocument,
+  BooksGetAllDocument,
+} from "~/generated/graphql";
 ```
 
 **変更後 (near-operation-file プリセット):**
+
 ```typescript
-import { BooksCreateDocument, BooksDeleteDocument } from "./mutations.generated"
-import { BooksGetAllDocument } from "./queries.generated"
+import {
+  BooksCreateDocument,
+  BooksDeleteDocument,
+} from "./mutations.generated";
+import { BooksGetAllDocument } from "./queries.generated";
 ```
 
 ### 必要なパッケージ
+
 - `@graphql-codegen/near-operation-file-preset` (新規追加)
 - `@graphql-codegen/typed-document-node` (新規追加)
 - `@graphql-codegen/typescript-operations` (既存)
@@ -111,11 +124,13 @@ import { BooksGetAllDocument } from "./queries.generated"
 ## 推奨事項
 
 ### このパターンが適している場合
+
 - 機能ごとにディレクトリが明確に分かれている
 - GraphQLクエリとコンポーネントが密接に関連している
 - コロケーションを重視する開発スタイル
 
 ### 従来のパターン (client) が適している場合
+
 - すべての型定義を一箇所で管理したい
 - インポートパスを統一したい
 - 生成ファイル数を最小限にしたい
@@ -132,4 +147,3 @@ import { BooksGetAllDocument } from "./queries.generated"
 - ブランチ: `spike/near-operation-file-pattern`
 - ビルド: ✅ 成功
 - 型チェック: ✅ 成功
-
