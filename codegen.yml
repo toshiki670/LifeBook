@@ -1,9 +1,20 @@
 overwrite: true
 schema: "schema.graphql"
-documents: "src/**/*.graphql" # documentsを有効化
+documents: "src/**/*.graphql"
 generates:
-  src/generated/:
-    preset: "client"
+  # 共通の型定義を生成
+  src/generated/graphql.ts:
+    plugins:
+      - typescript
+  # クエリファイルの近くに型定義を生成
+  src/:
+    preset: "near-operation-file"
+    presetConfig:
+      baseTypesPath: generated/graphql.ts
+      extension: .generated.ts
+    plugins:
+      - typescript-operations
+      - typed-document-node
     config:
       useTypeImports: true
       skipTypename: false
