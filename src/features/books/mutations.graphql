@@ -1,9 +1,4 @@
-mutation BooksCreate(
-  $title: String!
-  $author: String
-  $description: String
-  $publishedYear: Int
-) {
+mutation BooksCreate($title: String!, $author: String, $description: String, $publishedYear: Int) {
   library {
     createBook(
       title: $title

@@ -50,6 +50,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      graphql-tag:
+        specifier: ^2.12.6
+        version: 2.12.6(graphql@16.11.0)
       isbot:
         specifier: ^5.1.31
         version: 5.1.31
