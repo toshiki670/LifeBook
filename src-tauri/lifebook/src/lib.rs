@@ -1,8 +1,8 @@
 // LifeBook Library
 
-mod app_state;
-mod database;
-mod graphql_schema;
+pub mod app_state;
+pub mod database;
+pub mod graphql_schema;
 
 use app_state::AppState;
 use database::setup_database;
