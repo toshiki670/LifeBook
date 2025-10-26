@@ -18,6 +18,11 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig(async () => ({
   plugins: [reactRouter(), tsconfigPaths(), tailwindcss()],
 
+  // Optimize dependencies for Apollo Client v4
+  optimizeDeps: {
+    include: ["@apollo/client"],
+  },
+
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent Vite from obscuring rust errors
