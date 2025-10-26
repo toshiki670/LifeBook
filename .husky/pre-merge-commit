@@ -16,4 +16,3 @@ if [ "$BRANCH" = "main" ]; then
   echo "Use 'git reset --hard HEAD' to cancel the merge if needed."
   exit 1
 fi
-
