@@ -3,15 +3,6 @@ name: Frontend CI
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - "src/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/frontend.yml"
-      - "biome.jsonc"
-      - "tsconfig.json"
-      - "vite.config.ts"
-      - "react-router.config.ts"
 
 jobs:
   biome:
