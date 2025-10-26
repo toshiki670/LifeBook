@@ -6,12 +6,9 @@ import tsconfigPaths from "vite-tsconfig-paths"
 // Set chokidar environment variables to avoid EMFILE errors on macOS
 // Required because multiple watchers (Vite + React Router + Cargo) exceed file descriptor limit
 // For details, see: https://github.com/toshiki670/LifeBook/pull/31
-// @ts-expect-error process is a nodejs global
 process.env.CHOKIDAR_USEPOLLING = "true"
-// @ts-expect-error process is a nodejs global
 process.env.CHOKIDAR_INTERVAL = "300"
 
-// @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST
 
 // https://vite.dev/config/
