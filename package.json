@@ -15,7 +15,8 @@
     "prepare": "husky",
     "sync-version": "node scripts/sync-version.js",
     "prebuild": "pnpm sync-version",
-    "predev": "pnpm sync-version"
+    "predev": "pnpm sync-version",
+    "export-schema": "cd src-tauri && cargo run --bin export_schema"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
