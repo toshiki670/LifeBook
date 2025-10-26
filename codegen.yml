@@ -5,6 +5,8 @@ generates:
   # 共通の型定義を生成
   src/generated/graphql.ts:
     plugins:
+      - add:
+          content: "// @ts-nocheck"
       - typescript
   # クエリファイルの近くに型定義を生成
   src/:
