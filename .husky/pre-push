@@ -1,21 +1,21 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Get the branch name that is being pushed
-while read local_ref local_sha remote_ref remote_sha
-do
-  if [[ "$remote_ref" == *"/main" ]]; then
-    echo "ERROR: Direct pushes to 'main' branch are not allowed."
-    echo ""
-    echo "Please follow this workflow instead:"
-    echo "1. Push to your feature branch: git push origin <your-branch-name>"
-    echo "2. Create a Pull Request on GitHub"
-    echo "3. Have the PR reviewed and approved"
-    echo "4. Merge through GitHub's interface"
-    echo ""
-    echo "If you need to update a feature branch:"
-    echo "  git push origin <feature-branch-name>"
-    exit 1
-  fi
-done
+# $3 is the remote ref being pushed to
+remote_ref="$3"
+
+# Check if pushing to main branch
+if [ "$remote_ref" = "refs/heads/main" ]; then
+  echo "ERROR: Direct pushes to 'main' branch are not allowed."
+  echo ""
+  echo "Please follow this workflow instead:"
+  echo "1. Push to your feature branch: git push origin <your-branch-name>"
+  echo "2. Create a Pull Request on GitHub"
+  echo "3. Have the PR reviewed and approved"
+  echo "4. Merge through GitHub's interface"
+  echo ""
+  echo "If you need to update a feature branch:"
+  echo "  git push origin <feature-branch-name>"
+  exit 1
+fi
 
