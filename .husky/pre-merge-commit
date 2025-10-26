@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get current branch name
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if merging into main branch
+if [ "$BRANCH" = "main" ]; then
+  echo "ERROR: Direct merges into 'main' branch are not allowed."
+  echo ""
+  echo "Please follow this workflow instead:"
+  echo "1. Create a Pull Request on GitHub"
+  echo "2. Have the PR reviewed and approved"
+  echo "3. Merge through GitHub's interface"
+  echo ""
+  echo "Use 'git reset --hard HEAD' to cancel the merge if needed."
+  exit 1
+fi
+
