@@ -29,4 +29,6 @@ dist-ssr
 # GraphQL Code Generator
 # Note: Generated files are committed to ensure CI stability
 # src/generated/
-# schema.graphql
+
+# Generated GraphQL schema
+schema.graphql
