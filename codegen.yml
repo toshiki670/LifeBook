@@ -13,6 +13,8 @@ generates:
       baseTypesPath: generated/graphql.ts
       extension: .generated.ts
     plugins:
+      - add:
+          content: "// @ts-nocheck"
       - typescript-operations
       - typed-document-node
     config:

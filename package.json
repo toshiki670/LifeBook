@@ -17,7 +17,7 @@
     "prebuild": "pnpm sync-version",
     "predev": "pnpm sync-version",
     "export-schema": "cd src-tauri && cargo run --bin export_schema",
-    "codegen": "pnpm export-schema && graphql-codegen && pnpm format"
+    "codegen": "pnpm export-schema && graphql-codegen"
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
