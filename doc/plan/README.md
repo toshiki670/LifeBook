@@ -10,6 +10,18 @@ Planファイルには必ず日付を付けてください。以下の形式を�
 YYYY-MM-DD-<feature-or-task-name>.plan.md
 ```
 
+日付は手動で入力せず、以下のコマンドを使用してください：
+
+```bash
+# 最新の日付を取得
+date +%Y-%m-%d
+
+# ファイル作成例
+cat > doc/plan/$(date +%Y-%m-%d)-<feature-name>.plan.md << 'EOF'
+# Your plan content here
+EOF
+```
+
 ### 例
 
 - `2025-10-23-organize-documentation.plan.md`

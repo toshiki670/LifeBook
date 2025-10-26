@@ -4,4 +4,22 @@
 # nodebrewとpnpmのパスを追加
 export PATH="/Users/t/.nodebrew/current/bin:/Users/t/Library/pnpm:$PATH"
 
+# Get current branch name
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if committing to main branch
+if [ "$BRANCH" = "main" ]; then
+  echo "ERROR: Direct commits to 'main' branch are not allowed."
+  echo ""
+  echo "Please follow this workflow instead:"
+  echo "1. Create a new feature branch: git checkout -b feature/your-feature-name"
+  echo "2. Make your changes and commit to the feature branch"
+  echo "3. Push your feature branch: git push origin feature/your-feature-name"
+  echo "4. Create a Pull Request for review"
+  echo ""
+  echo "If you need to switch to an existing branch:"
+  echo "  git checkout <branch-name>"
+  exit 1
+fi
+
 pnpm exec lint-staged
