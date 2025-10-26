@@ -20,4 +20,3 @@ generates:
       skipTypename: false
       documentMode: "documentNode"
       fragmentMasking: true
-      mask: true

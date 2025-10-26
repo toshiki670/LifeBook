@@ -1,4 +1,4 @@
-mutation BooksCreate($title: String!, $author: String, $description: String, $publishedYear: Int) {
+mutation Create($title: String!, $author: String, $description: String, $publishedYear: Int) {
   library {
     createBook(
       title: $title
@@ -15,7 +15,7 @@ mutation BooksCreate($title: String!, $author: String, $description: String, $pu
   }
 }
 
-mutation BooksUpdate(
+mutation Update(
   $id: Int!
   $title: String
   $author: String
@@ -39,7 +39,7 @@ mutation BooksUpdate(
   }
 }
 
-mutation BooksDelete($id: Int!) {
+mutation Delete($id: Int!) {
   library {
     deleteBook(id: $id)
   }

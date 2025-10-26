@@ -1,13 +1,14 @@
+import type * as Types from "../../../../generated/graphql"
+
 import type { TypedDocumentNode as DocumentNode } from "@graphql-typed-document-node/core"
-import type * as Types from "../../generated/graphql"
-export type BooksCreateMutationVariables = Types.Exact<{
+export type CreateMutationVariables = Types.Exact<{
   title: Types.Scalars["String"]["input"]
   author?: Types.InputMaybe<Types.Scalars["String"]["input"]>
   description?: Types.InputMaybe<Types.Scalars["String"]["input"]>
   publishedYear?: Types.InputMaybe<Types.Scalars["Int"]["input"]>
 }>
 
-export type BooksCreateMutation = {
+export type CreateMutation = {
   __typename?: "MutationRoot"
   library: {
     __typename?: "BookMutation"
@@ -22,7 +23,7 @@ export type BooksCreateMutation = {
   }
 }
 
-export type BooksUpdateMutationVariables = Types.Exact<{
+export type UpdateMutationVariables = Types.Exact<{
   id: Types.Scalars["Int"]["input"]
   title?: Types.InputMaybe<Types.Scalars["String"]["input"]>
   author?: Types.InputMaybe<Types.Scalars["String"]["input"]>
@@ -30,7 +31,7 @@ export type BooksUpdateMutationVariables = Types.Exact<{
   publishedYear?: Types.InputMaybe<Types.Scalars["Int"]["input"]>
 }>
 
-export type BooksUpdateMutation = {
+export type UpdateMutation = {
   __typename?: "MutationRoot"
   library: {
     __typename?: "BookMutation"
@@ -45,22 +46,22 @@ export type BooksUpdateMutation = {
   }
 }
 
-export type BooksDeleteMutationVariables = Types.Exact<{
+export type DeleteMutationVariables = Types.Exact<{
   id: Types.Scalars["Int"]["input"]
 }>
 
-export type BooksDeleteMutation = {
+export type DeleteMutation = {
   __typename?: "MutationRoot"
   library: { __typename?: "BookMutation"; deleteBook: boolean }
 }
 
-export const BooksCreateDocument = {
+export const CreateDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "mutation",
-      name: { kind: "Name", value: "BooksCreate" },
+      name: { kind: "Name", value: "Create" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -138,14 +139,14 @@ export const BooksCreateDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<BooksCreateMutation, BooksCreateMutationVariables>
-export const BooksUpdateDocument = {
+} as unknown as DocumentNode<CreateMutation, CreateMutationVariables>
+export const UpdateDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "mutation",
-      name: { kind: "Name", value: "BooksUpdate" },
+      name: { kind: "Name", value: "Update" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -233,14 +234,14 @@ export const BooksUpdateDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<BooksUpdateMutation, BooksUpdateMutationVariables>
-export const BooksDeleteDocument = {
+} as unknown as DocumentNode<UpdateMutation, UpdateMutationVariables>
+export const DeleteDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "mutation",
-      name: { kind: "Name", value: "BooksDelete" },
+      name: { kind: "Name", value: "Delete" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -278,4 +279,4 @@ export const BooksDeleteDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<BooksDeleteMutation, BooksDeleteMutationVariables>
+} as unknown as DocumentNode<DeleteMutation, DeleteMutationVariables>

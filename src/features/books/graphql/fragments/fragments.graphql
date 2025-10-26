@@ -1,10 +1,10 @@
-fragment BookCard on BookDto {
+fragment Card on BookDto {
   id
   title
   author
 }
 
-fragment BookDetail on BookDto {
+fragment Detail on BookDto {
   id
   title
   author

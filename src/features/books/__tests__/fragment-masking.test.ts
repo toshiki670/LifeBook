@@ -1,4 +1,4 @@
-import type { BookCardFragment, BookDetailFragment } from "./fragments.generated"
+import type { CardFragment, DetailFragment } from "../graphql/fragments/fragments.generated"
 
 // fragment-maskingの動作テスト
 export function testFragmentMasking() {
@@ -12,14 +12,14 @@ export function testFragmentMasking() {
   }
 
   // BookCardFragmentとして使用（型マスキング）
-  const cardBook: BookCardFragment = fullBook
+  const cardBook: CardFragment = fullBook
   console.log("Card book:", cardBook)
 
   // BookCardFragmentでは description にアクセスできない（型エラー）
   // console.log(cardBook.description) // ← これは型エラーになる
 
   // BookDetailFragmentとして使用（型マスキング）
-  const detailBook: BookDetailFragment = fullBook
+  const detailBook: DetailFragment = fullBook
   console.log("Detail book:", detailBook)
 
   // BookDetailFragmentでは description にアクセスできる
@@ -39,7 +39,7 @@ export function demonstrateTypeMasking() {
   }
 
   // BookCardFragmentとして型を制限
-  const cardBook: BookCardFragment = book
+  const cardBook: CardFragment = book
 
   // 以下のプロパティはアクセス可能
   console.log("ID:", cardBook.id)

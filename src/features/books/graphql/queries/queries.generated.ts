@@ -1,8 +1,9 @@
-import type { TypedDocumentNode as DocumentNode } from "@graphql-typed-document-node/core"
-import type * as Types from "../../generated/graphql"
-export type BooksGetAllQueryVariables = Types.Exact<{ [key: string]: never }>
+import type * as Types from "../../../../generated/graphql"
 
-export type BooksGetAllQuery = {
+import type { TypedDocumentNode as DocumentNode } from "@graphql-typed-document-node/core"
+export type GetAllQueryVariables = Types.Exact<{ [key: string]: never }>
+
+export type GetAllQuery = {
   __typename?: "QueryRoot"
   library: {
     __typename?: "BookQuery"
@@ -17,11 +18,11 @@ export type BooksGetAllQuery = {
   }
 }
 
-export type BooksGetOneQueryVariables = Types.Exact<{
+export type GetOneQueryVariables = Types.Exact<{
   id: Types.Scalars["Int"]["input"]
 }>
 
-export type BooksGetOneQuery = {
+export type GetOneQuery = {
   __typename?: "QueryRoot"
   library: {
     __typename?: "BookQuery"
@@ -36,13 +37,13 @@ export type BooksGetOneQuery = {
   }
 }
 
-export const BooksGetAllDocument = {
+export const GetAllDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "BooksGetAll" },
+      name: { kind: "Name", value: "GetAll" },
       selectionSet: {
         kind: "SelectionSet",
         selections: [
@@ -73,14 +74,14 @@ export const BooksGetAllDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<BooksGetAllQuery, BooksGetAllQueryVariables>
-export const BooksGetOneDocument = {
+} as unknown as DocumentNode<GetAllQuery, GetAllQueryVariables>
+export const GetOneDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "BooksGetOne" },
+      name: { kind: "Name", value: "GetOne" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -128,4 +129,4 @@ export const BooksGetOneDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<BooksGetOneQuery, BooksGetOneQueryVariables>
+} as unknown as DocumentNode<GetOneQuery, GetOneQueryVariables>

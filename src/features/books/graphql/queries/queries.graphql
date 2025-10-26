@@ -1,4 +1,4 @@
-query BooksGetAll {
+query GetAll {
   library {
     books {
       id
@@ -10,7 +10,7 @@ query BooksGetAll {
   }
 }
 
-query BooksGetOne($id: Int!) {
+query GetOne($id: Int!) {
   library {
     book(id: $id) {
       id

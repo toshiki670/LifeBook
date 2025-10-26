@@ -1,12 +1,14 @@
+import type * as Types from "../../../../generated/graphql"
+
 import type { TypedDocumentNode as DocumentNode } from "@graphql-typed-document-node/core"
-export type BookCardFragment = {
+export type CardFragment = {
   __typename?: "BookDto"
   id: number
   title: string
   author?: string | null
 }
 
-export type BookDetailFragment = {
+export type DetailFragment = {
   __typename?: "BookDto"
   id: number
   title: string
@@ -15,12 +17,12 @@ export type BookDetailFragment = {
   publishedYear?: number | null
 }
 
-export const BookCardFragmentDoc = {
+export const CardFragmentDoc = {
   kind: "Document",
   definitions: [
     {
       kind: "FragmentDefinition",
-      name: { kind: "Name", value: "BookCard" },
+      name: { kind: "Name", value: "Card" },
       typeCondition: { kind: "NamedType", name: { kind: "Name", value: "BookDto" } },
       selectionSet: {
         kind: "SelectionSet",
@@ -32,13 +34,13 @@ export const BookCardFragmentDoc = {
       },
     },
   ],
-} as unknown as DocumentNode<BookCardFragment, unknown>
-export const BookDetailFragmentDoc = {
+} as unknown as DocumentNode<CardFragment, unknown>
+export const DetailFragmentDoc = {
   kind: "Document",
   definitions: [
     {
       kind: "FragmentDefinition",
-      name: { kind: "Name", value: "BookDetail" },
+      name: { kind: "Name", value: "Detail" },
       typeCondition: { kind: "NamedType", name: { kind: "Name", value: "BookDto" } },
       selectionSet: {
         kind: "SelectionSet",
@@ -52,4 +54,4 @@ export const BookDetailFragmentDoc = {
       },
     },
   ],
-} as unknown as DocumentNode<BookDetailFragment, unknown>
+} as unknown as DocumentNode<DetailFragment, unknown>

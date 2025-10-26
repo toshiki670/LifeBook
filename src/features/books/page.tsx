@@ -1,5 +1,4 @@
-import { useMutation, useQuery } from "@apollo/client/react"
-import React from "react"
+import type React from "react"
 import { Link, useLoaderData } from "react-router"
 import { AppHeader } from "~/components/common/app-header"
 import { Alert, AlertDescription } from "~/components/ui/alert"
@@ -8,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
+import type { BookDto } from "~/generated/graphql"
 import { getDbStatus } from "~/lib/graphql"
 import type { Route } from "./+types/page"
-import { BooksCreateDocument, BooksDeleteDocument } from "./mutations.generated"
-import { BooksGetAllDocument } from "./queries.generated"
+import { BookCard } from "./graphql/fragments/BookCard"
+import { useBookMutations } from "./graphql/mutations/useBookMutations"
+import { useBooks } from "./graphql/queries/useBooks"
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -27,14 +28,15 @@ export async function clientLoader() {
 
 export default function Books() {
   const { dbStatus } = useLoaderData<typeof clientLoader>()
-  const { data, loading, error, refetch } = useQuery(BooksGetAllDocument)
-  const [createBook, { loading: creating }] = useMutation(BooksCreateDocument)
-  const [deleteBook, { loading: deleting }] = useMutation(BooksDeleteDocument)
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
-
-  const books = data?.library?.books || []
-  const isLoading = loading || creating || deleting
+  const { books, loading, error } = useBooks()
+  const {
+    createBook,
+    deleteBook,
+    loading: mutationLoading,
+    successMessage,
+    errorMessage,
+  } = useBookMutations()
+  const isLoading = loading || mutationLoading
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -54,25 +56,17 @@ export default function Books() {
           publishedYear: publishedYear ? parseInt(publishedYear, 10) : null,
         },
       })
-      setSuccessMessage("本を追加しました")
-      setErrorMessage(null)
       e.currentTarget.reset()
-      refetch()
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "本の追加に失敗しました")
-      setSuccessMessage(null)
+      console.error("Failed to create book:", err)
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
       await deleteBook({ variables: { id } })
-      setSuccessMessage("本を削除しました")
-      setErrorMessage(null)
-      refetch()
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "本の削除に失敗しました")
-      setSuccessMessage(null)
+      console.error("Failed to delete book:", err)
     }
   }
 
@@ -156,7 +150,7 @@ export default function Books() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {creating ? "追加中..." : "追加"}
+                {mutationLoading ? "追加中..." : "追加"}
               </Button>
             </form>
           </CardContent>
@@ -176,43 +170,14 @@ export default function Books() {
               </p>
             ) : (
               <div className="space-y-4">
-                {books.map(
-                  (book: {
-                    id: number
-                    title: string
-                    author?: string | null
-                    description?: string | null
-                    publishedYear?: number | null
-                  }) => (
-                    <Card key={book.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-semibold">{book.title}</h3>
-                            {book.author && (
-                              <p className="text-muted-foreground mt-1">著者: {book.author}</p>
-                            )}
-                            {book.description && <p className="mt-2">{book.description}</p>}
-                            {book.publishedYear && (
-                              <p className="text-muted-foreground text-sm mt-1">
-                                出版年: {book.publishedYear}
-                              </p>
-                            )}
-                          </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            disabled={isLoading}
-                            onClick={() => handleDelete(book.id)}
-                            className="ml-4"
-                          >
-                            {deleting ? "削除中..." : "削除"}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ),
-                )}
+                {books.map((book: BookDto) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onDelete={handleDelete}
+                    isDeleting={mutationLoading}
+                  />
+                ))}
               </div>
             )}
           </CardContent>

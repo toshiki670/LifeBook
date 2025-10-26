@@ -1,15 +1,19 @@
 # fragment-masking 検証結果
 
 ## 検証日
+
 2025-10-25
 
 ## 概要
+
 `near-operation-file`プリセットで`fragment-masking`を有効化し、型安全性の向上を検証しました。
 
 ## 実装内容
 
 ### 1. フラグメントファイルの作成
+
 `src/features/books/fragments.graphql`を作成：
+
 ```graphql
 fragment BookCard on BookDto {
   id
@@ -27,6 +31,7 @@ fragment BookDetail on BookDto {
 ```
 
 ### 2. codegen.ymlの設定
+
 ```yaml
 config:
   fragmentMasking: true
@@ -34,23 +39,24 @@ config:
 ```
 
 ### 3. 生成されたファイル
+
 `src/features/books/fragments.generated.ts`が生成され、以下の内容が含まれています：
 
 ```typescript
-export type BookCardFragment = { 
-  __typename?: 'BookDto', 
-  id: number, 
-  title: string, 
-  author?: string | null 
+export type BookCardFragment = {
+  __typename?: "BookDto";
+  id: number;
+  title: string;
+  author?: string | null;
 };
 
-export type BookDetailFragment = { 
-  __typename?: 'BookDto', 
-  id: number, 
-  title: string, 
-  author?: string | null, 
-  description?: string | null, 
-  publishedYear?: number | null 
+export type BookDetailFragment = {
+  __typename?: "BookDto";
+  id: number;
+  title: string;
+  author?: string | null;
+  description?: string | null;
+  publishedYear?: number | null;
 };
 ```
 

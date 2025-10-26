@@ -1,7 +1,7 @@
-import type { BookCardFragment, BookDetailFragment } from "./fragments.generated"
+import type { CardFragment, DetailFragment } from "../graphql/fragments/fragments.generated"
 
 // BookCardFragmentを使用するコンポーネント
-export function BookCard({ book }: { book: BookCardFragment }) {
+export function BookCard({ book }: { book: CardFragment }) {
   return (
     <div className="book-card">
       <h3>{book.title}</h3>
@@ -13,7 +13,7 @@ export function BookCard({ book }: { book: BookCardFragment }) {
 }
 
 // BookDetailFragmentを使用するコンポーネント
-export function BookDetail({ book }: { book: BookDetailFragment }) {
+export function BookDetail({ book }: { book: DetailFragment }) {
   return (
     <div className="book-detail">
       <h2>{book.title}</h2>
@@ -37,11 +37,11 @@ export function testFragmentMasking() {
   }
 
   // BookCardFragmentとして使用（型マスキング）
-  const cardBook: BookCardFragment = fullBook
+  const cardBook: CardFragment = fullBook
   console.log("Card book:", cardBook)
 
   // BookDetailFragmentとして使用（型マスキング）
-  const detailBook: BookDetailFragment = fullBook
+  const detailBook: DetailFragment = fullBook
   console.log("Detail book:", detailBook)
 
   return { cardBook, detailBook }
