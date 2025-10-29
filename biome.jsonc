@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.0/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/gen/schemas", "!src/generated", "!**/*.generated.ts"]
+    "includes": ["**", "!**/gen/schemas", "!src/generated", "!**/*.generated.ts", "!build"]
   },
   "formatter": {
     "enabled": true,
@@ -28,6 +28,9 @@
     }
   },
   "css": {
+    "parser": {
+      "tailwindDirectives": true
+    },
     "linter": {
       "enabled": false
     }
