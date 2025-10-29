@@ -1,0 +1,13 @@
+fragment BookCard on BookDto {
+  id
+  title
+  author
+}
+
+fragment BookDetail on BookDto {
+  id
+  title
+  author
+  description
+  publishedYear
+}

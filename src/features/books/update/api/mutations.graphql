@@ -1,0 +1,21 @@
+#import "../../shared/fragments/book.graphql"
+
+mutation UpdateBook(
+  $id: Int!
+  $title: String
+  $author: String
+  $description: String
+  $publishedYear: Int
+) {
+  library {
+    updateBook(
+      id: $id
+      title: $title
+      author: $author
+      description: $description
+      publishedYear: $publishedYear
+    ) {
+      ...BookDetail
+    }
+  }
+}

@@ -1,0 +1,9 @@
+#import "../../shared/fragments/book.graphql"
+
+query GetBook($id: Int!) {
+  library {
+    book(id: $id) {
+      ...BookDetail
+    }
+  }
+}
