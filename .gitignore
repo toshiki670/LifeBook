@@ -28,3 +28,6 @@ dist-ssr
 
 # Generated GraphQL schema
 schema.graphql
+
+# Rust
+target/
