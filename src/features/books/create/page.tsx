@@ -16,7 +16,7 @@ export function meta() {
   ]
 }
 
-export async function action({ request }: Route.ActionArgs) {
+export async function clientAction({ request }: Route.ActionArgs) {
   const formData = await request.formData()
   const title = formData.get("title") as string
   const author = formData.get("author") as string

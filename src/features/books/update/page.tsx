@@ -30,7 +30,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return { book }
 }
 
-export async function action({ request, params }: Route.ActionArgs) {
+export async function clientAction({ request, params }: Route.ActionArgs) {
   if (!params.id) {
     return {
       success: false,
