@@ -1,0 +1,14 @@
+#import "../../shared/fragments/book.graphql"
+
+mutation CreateBook($title: String!, $author: String, $description: String, $publishedYear: Int) {
+  library {
+    createBook(
+      title: $title
+      author: $author
+      description: $description
+      publishedYear: $publishedYear
+    ) {
+      ...BookDetail
+    }
+  }
+}
