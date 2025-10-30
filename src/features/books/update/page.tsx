@@ -1,12 +1,10 @@
 import { useEffect } from "react"
-import { Form, Link, useNavigate, useNavigation } from "react-router"
+import { Link, useNavigate, useNavigation } from "react-router"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
-import { DialogHeader, DialogTitle } from "~/components/ui/dialog"
-import { Input } from "~/components/ui/input"
-import { Label } from "~/components/ui/label"
-import { Textarea } from "~/components/ui/textarea"
 import { getBook } from "../detail/api/getBook"
+import { BookForm } from "../shared/components/BookForm"
+import { parseBookFormData } from "../shared/utils/parseBookFormData"
 import type { Route } from "./+types/page"
 import { updateBook } from "./api/updateBook"
 
@@ -39,17 +37,10 @@ export async function clientAction({ request, params }: Route.ActionArgs) {
   }
 
   const formData = await request.formData()
-  const title = formData.get("title") as string
-  const author = formData.get("author") as string
-  const description = formData.get("description") as string
-  const publishedYear = formData.get("publishedYear") as string
-
+  const parsed = parseBookFormData(formData)
   const bookData = {
     id: parseInt(params.id, 10),
-    title: title || undefined,
-    author: author || undefined,
-    description: description || undefined,
-    publishedYear: publishedYear ? parseInt(publishedYear, 10) : undefined,
+    ...parsed,
   }
 
   const result = await updateBook(bookData)
@@ -77,73 +68,25 @@ export default function UpdateBook({ loaderData, actionData }: Route.ComponentPr
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>書籍編集</DialogTitle>
-      </DialogHeader>
-
       {actionData?.success === false && actionData.error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{actionData.error}</AlertDescription>
         </Alert>
       )}
 
-      <Form method="post" className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">
-            タイトル <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="title"
-            name="title"
-            type="text"
-            required
-            placeholder="本のタイトル"
-            disabled={isSubmitting}
-            defaultValue={book.title}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="author">著者</Label>
-          <Input
-            id="author"
-            name="author"
-            type="text"
-            placeholder="著者名"
-            disabled={isSubmitting}
-            defaultValue={book.author || ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">説明</Label>
-          <Textarea
-            id="description"
-            name="description"
-            placeholder="本の説明"
-            rows={3}
-            disabled={isSubmitting}
-            defaultValue={book.description || ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="publishedYear">出版年</Label>
-          <Input
-            id="publishedYear"
-            name="publishedYear"
-            type="number"
-            placeholder="2024"
-            disabled={isSubmitting}
-            defaultValue={book.publishedYear || ""}
-          />
-        </div>
-        <div className="flex gap-2 justify-end">
-          <Button type="button" variant="outline" asChild disabled={isSubmitting}>
-            <Link to={`/books/${book.id}`}>キャンセル</Link>
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "更新中..." : "更新"}
-          </Button>
-        </div>
-      </Form>
+      <BookForm
+        title="書籍編集"
+        isSubmitting={isSubmitting}
+        submitLabel="更新"
+        submittingLabel="更新中..."
+        cancelTo={`/books/${book.id}`}
+        initialValues={{
+          title: book.title,
+          author: book.author || undefined,
+          description: book.description || undefined,
+          publishedYear: book.publishedYear || undefined,
+        }}
+      />
     </>
   )
 }
