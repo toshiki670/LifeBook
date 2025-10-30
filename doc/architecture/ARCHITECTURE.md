@@ -795,6 +795,7 @@ mod tests {
 アプリの Books 機能（作成/更新/一覧/詳細）のUIとデータフロー設計。React/Remix + Apollo Client（Tauri Link）を使用します。
 
 ### ディレクトリ
+
 ```
 src/features/books/
   create/      # 作成ページ(+actions)
@@ -807,21 +808,25 @@ src/features/books/
 ```
 
 ### 共通フォーム
+
 - `shared/components/BookForm.tsx` に Create/Update 共通の入力UIを集約
 - プロパティ:
   - `title`, `initialValues`, `isSubmitting`, `submitLabel`, `submittingLabel`, `cancelTo`
 - 呼び出し元ルートが `<Form method="post">` を内部で描画
 
 ### フォーム入力 → 値変換
+
 - `shared/utils/parseBookFormData.ts`: `FormData` を `BookFormValues` に変換
 - 文字列空値は `undefined`、`publishedYear` は数値に変換
 
 ### ルーティング/データフロー
+
 - Create: 画面 → `clientAction` → `createBook` Mutation → 成功時 `/books` に戻る
 - Update: `clientLoader` で対象取得 → 画面（初期値）→ `clientAction` → `updateBook` → 成功時 `/books/:id`
 - 送信中状態は `useNavigation().state === "submitting"`
 
 ### GraphQL/Apollo
+
 - 生成済みドキュメントを利用（`books/graphql`）
 - `src/lib/apollo-client.ts`
   - クライアント: Tauri の `invoke` を用いる `ApolloLink`
@@ -829,11 +834,13 @@ src/features/books/
   - SSR が必要な場合は `HttpLink` + `GRAPHQL_ENDPOINT` による環境別生成を検討
 
 ### 拡張指針
+
 1. フィールド追加時は `BookFormValues` → `BookForm` → `parseBookFormData` の順に更新
 2. バリデーションは段階的に（クライアント最小限 → GraphQLエラーをUIへ）
 3. ナビゲーションは成功時 `navigate`、キャンセルは `cancelTo` に委譲
 
 関連ファイル:
+
 - `src/features/books/shared/types.ts`
 - `src/features/books/shared/components/BookForm.tsx`
 - `src/features/books/shared/utils/parseBookFormData.ts`
