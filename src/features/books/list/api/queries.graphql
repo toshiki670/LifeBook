@@ -1,0 +1,9 @@
+#import "../../shared/fragments/book.graphql"
+
+query GetAllBooks {
+  library {
+    books {
+      ...BookCard
+    }
+  }
+}
