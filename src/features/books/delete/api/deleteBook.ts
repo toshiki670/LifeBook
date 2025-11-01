@@ -31,4 +31,3 @@ export async function deleteBook(id: number) {
     }
   }
 }
-

@@ -1,14 +1,9 @@
 import { Form, redirect, useNavigate, useNavigation } from "react-router"
 import { Alert, AlertDescription } from "~/components/ui/alert"
 import { Button } from "~/components/ui/button"
-import {
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog"
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog"
 import type { Route } from "./+types/page"
-import { getBook } from "../detail/api/getBook"
+import { checkBookExists } from "./api/checkBookExists"
 import { deleteBook } from "./api/deleteBook"
 
 export function meta() {
@@ -20,13 +15,19 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Book ID is required", { status: 400 })
   }
 
-  const book = await getBook(Number.parseInt(params.id, 10))
+  const id = Number.parseInt(params.id, 10)
 
-  if (!book) {
+  if (!Number.isInteger(id)) {
+    throw new Response("Book ID is invalid", { status: 400 })
+  }
+
+  const exists = await checkBookExists(id)
+
+  if (!exists) {
     throw new Response("Book not found", { status: 404 })
   }
 
-  return { book }
+  return { bookId: id }
 }
 
 export async function clientAction({ params }: Route.ActionArgs) {
@@ -59,7 +60,7 @@ export async function clientAction({ params }: Route.ActionArgs) {
 }
 
 export default function DeleteBook({ loaderData, actionData }: Route.ComponentProps) {
-  const { book } = loaderData
+  const { bookId } = loaderData
   const navigate = useNavigate()
   const navigation = useNavigation()
   const isSubmitting = navigation.state === "submitting"
@@ -70,7 +71,7 @@ export default function DeleteBook({ loaderData, actionData }: Route.ComponentPr
         <DialogTitle>書籍を削除しますか？</DialogTitle>
         <DialogDescription>
           <p className="text-sm">
-            「{book.title}」を削除すると元に戻せません。この操作を続行しますか？
+            ID {bookId} の書籍を削除すると元に戻せません。この操作を続行しますか？
           </p>
         </DialogDescription>
       </DialogHeader>
@@ -99,4 +100,3 @@ export default function DeleteBook({ loaderData, actionData }: Route.ComponentPr
     </div>
   )
 }
-

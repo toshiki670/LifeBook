@@ -1,0 +1,7 @@
+query CheckBookExists($id: Int!) {
+  library {
+    book(id: $id) {
+      id
+    }
+  }
+}
