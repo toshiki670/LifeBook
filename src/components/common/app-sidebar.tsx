@@ -1,5 +1,6 @@
 import type * as React from "react"
 
+import { Link } from "react-router"
 import { SearchForm } from "~/components/common/search-form"
 import { VersionSwitcher } from "~/components/common/version-switcher"
 import {
@@ -93,7 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       asChild
                       isActive={"isActive" in subItem ? subItem.isActive : false}
                     >
-                      <a href={subItem.url}>{subItem.title}</a>
+                      <Link to={subItem.url}>{subItem.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
