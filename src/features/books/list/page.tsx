@@ -33,6 +33,8 @@ export default function Books({ loaderData }: Route.ComponentProps) {
   const location = useLocation()
   const navigate = useNavigate()
   const isCreateModalOpen = location.pathname === "/books/create"
+  const isDeleteModalOpen = /^\/books\/\d+\/delete$/.test(location.pathname)
+  const isModalOpen = isCreateModalOpen || isDeleteModalOpen
 
   return (
     <>
@@ -62,7 +64,7 @@ export default function Books({ loaderData }: Route.ComponentProps) {
       </div>
 
       <Dialog
-        open={isCreateModalOpen}
+        open={isModalOpen}
         onOpenChange={(open) => {
           if (!open) {
             // モーダルを閉じる際は一覧ページに戻る
