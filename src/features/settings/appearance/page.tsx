@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useFetcher } from "react-router"
 import { Label } from "~/components/ui/label"
 import {
@@ -10,6 +11,7 @@ import {
 import type { Route } from "./+types/page"
 import { getAppearanceSettings } from "./api/getAppearanceSettings"
 import { updateAppearanceSettings } from "./api/updateAppearanceSettings"
+import { applyTheme, type ThemeMode } from "./utils/theme"
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: "Settings - Appearance" }]
@@ -33,8 +35,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 export default function AppearanceSettingsPage({ loaderData }: Route.ComponentProps) {
   const fetcher = useFetcher<typeof clientAction>()
   const isSubmitting = fetcher.state !== "idle"
-  const currentTheme =
-    fetcher.data?.updateAppearanceSettings?.theme ?? loaderData.appearanceSettings.theme
+  const currentTheme = (fetcher.data?.updateAppearanceSettings?.theme ??
+    loaderData.appearanceSettings.theme) as ThemeMode
+
+  useEffect(() => {
+    if (!currentTheme) {
+      return
+    }
+    applyTheme(currentTheme)
+  }, [currentTheme])
 
   return (
     <div className="space-y-6">
