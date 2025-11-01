@@ -1,0 +1,7 @@
+mutation UpdateAppearanceSettings($theme: String) {
+  settings {
+    updateAppearanceSettings(theme: $theme) {
+      theme
+    }
+  }
+}

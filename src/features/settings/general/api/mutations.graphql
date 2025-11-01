@@ -1,0 +1,7 @@
+mutation UpdateGeneralSettings($language: String) {
+  settings {
+    updateGeneralSettings(language: $language) {
+      language
+    }
+  }
+}
