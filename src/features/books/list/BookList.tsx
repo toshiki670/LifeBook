@@ -9,7 +9,9 @@ interface BookListProps {
 export function BookList({ books }: BookListProps) {
   const navigation = useNavigation()
   const isLoading = navigation.state === "loading"
-  const isSubmitting = navigation.state === "submitting"
+  const deleteTargetMatch = navigation.location?.pathname?.match(/^\/books\/(\d+)\/delete$/)
+  const deletingId = deleteTargetMatch ? Number.parseInt(deleteTargetMatch[1], 10) : null
+  const isNavigatingToDelete = navigation.state !== "idle" && Number.isInteger(deletingId)
 
   if (isLoading) {
     return <p className="text-muted-foreground">読み込み中...</p>
@@ -25,9 +27,10 @@ export function BookList({ books }: BookListProps) {
 
   return (
     <div className="space-y-4">
-      {books.map((book) => (
-        <BookCard key={book.id} book={book} isSubmitting={isSubmitting} />
-      ))}
+      {books.map((book) => {
+        const isNavigating = isNavigatingToDelete && deletingId === book.id
+        return <BookCard key={book.id} book={book} isNavigating={isNavigating} />
+      })}
     </div>
   )
 }

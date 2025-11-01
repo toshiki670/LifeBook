@@ -5,6 +5,7 @@ export default [
     index("features/dashboard/page.tsx"),
     route("books", "features/books/list/page.tsx", [
       route("create", "features/books/create/page.tsx"),
+      route(":id/delete", "features/books/delete/page.tsx"),
     ]),
     route("books/:id", "features/books/detail/page.tsx", [
       route("edit", "features/books/update/page.tsx"),

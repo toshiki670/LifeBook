@@ -1,0 +1,9 @@
+#import "../../shared/fragments/book.graphql"
+
+mutation DeleteBook($id: Int!) {
+  library {
+    deleteBook(id: $id)
+  }
+}
+
+
