@@ -1,11 +1,14 @@
+import { Settings } from "lucide-react"
 import type * as React from "react"
 
-import { Link } from "react-router"
+import { NavLink, useLocation } from "react-router"
 import { SearchForm } from "~/components/common/search-form"
 import { VersionSwitcher } from "~/components/common/version-switcher"
+import { Button } from "~/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -53,28 +56,12 @@ const data = {
         },
       ],
     },
-    {
-      title: "設定",
-      url: "#",
-      items: [
-        {
-          title: "アプリケーション設定",
-          url: "#",
-        },
-        {
-          title: "データベース",
-          url: "#",
-        },
-        {
-          title: "バックアップ",
-          url: "#",
-        },
-      ],
-    },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const location = useLocation()
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -88,21 +75,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((subItem) => (
-                  <SidebarMenuItem key={subItem.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={"isActive" in subItem ? subItem.isActive : false}
-                    >
-                      <Link to={subItem.url}>{subItem.title}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {item.items.map((subItem) => {
+                  const isActive =
+                    "isActive" in subItem
+                      ? subItem.isActive
+                      : subItem.url !== "#" && location.pathname.startsWith(subItem.url)
+
+                  const navState = subItem.url.startsWith("/settings")
+                    ? { backgroundLocation: location }
+                    : undefined
+
+                  return (
+                    <SidebarMenuItem key={subItem.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <NavLink to={subItem.url} state={navState}>
+                          {subItem.title}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <Button asChild variant="ghost" className="w-full justify-start">
+          <NavLink to="/settings" state={{ backgroundLocation: location }}>
+            <Settings className="mr-2 h-4 w-4" />
+            設定
+          </NavLink>
+        </Button>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

@@ -1,0 +1,7 @@
+mutation UpdateDatabaseSettings($databaseDirectory: String) {
+  settings {
+    updateDatabaseSettings(databaseDirectory: $databaseDirectory) {
+      databaseDirectory
+    }
+  }
+}

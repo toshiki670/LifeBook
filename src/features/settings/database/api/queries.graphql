@@ -1,0 +1,7 @@
+query GetDatabaseSettings {
+  settings {
+    databaseSettings {
+      databaseDirectory
+    }
+  }
+}
