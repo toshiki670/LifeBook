@@ -9,9 +9,11 @@ use strum::{AsRefStr, Display, EnumString};
 )]
 #[serde(rename_all = "lowercase")]
 #[strum(ascii_case_insensitive)]
+#[derive(Default)]
 pub enum Language {
     #[serde(rename = "ja")]
     #[strum(serialize = "ja")]
+    #[default]
     Japanese,
     #[serde(rename = "en")]
     #[strum(serialize = "en")]
@@ -23,12 +25,6 @@ pub enum Language {
     // #[serde(rename = "ko")]
     // #[strum(serialize = "ko")]
     // Korean,
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Self::Japanese
-    }
 }
 
 #[cfg(test)]
