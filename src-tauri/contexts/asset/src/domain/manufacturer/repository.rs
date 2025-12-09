@@ -1,6 +1,6 @@
 // Asset Domain - Manufacturer Repository Interface
 
-use crate::domain::entities::manufacturer::Manufacturer;
+use super::entity::Manufacturer;
 use crate::domain::errors::DomainError;
 use async_trait::async_trait;
 use sea_orm::DatabaseTransaction;

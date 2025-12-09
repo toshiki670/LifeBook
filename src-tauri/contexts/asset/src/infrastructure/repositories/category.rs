@@ -1,8 +1,8 @@
 // Asset Infrastructure - Category Repository Implementation
 
-use crate::domain::entities::category::Category;
+use crate::domain::category::{Category, CategoryRepository};
 use crate::domain::errors::DomainError;
-use crate::domain::repositories::category::CategoryRepository;
+
 use asset_entity::{category, product_category};
 use async_trait::async_trait;
 use sea_orm::{

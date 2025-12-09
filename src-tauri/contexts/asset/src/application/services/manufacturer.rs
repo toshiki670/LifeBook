@@ -2,8 +2,8 @@
 
 use crate::application::dto::manufacturer::ManufacturerDto;
 use crate::application::errors::ApplicationError;
-use crate::domain::entities::manufacturer::Manufacturer;
-use crate::domain::repositories::manufacturer::ManufacturerRepository;
+use crate::domain::manufacturer::{Manufacturer, ManufacturerRepository};
+
 use std::sync::Arc;
 
 pub struct ManufacturerService {

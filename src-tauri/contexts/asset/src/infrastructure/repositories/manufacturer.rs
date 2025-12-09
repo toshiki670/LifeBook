@@ -1,8 +1,8 @@
 // Asset Infrastructure - Manufacturer Repository Implementation
 
-use crate::domain::entities::manufacturer::Manufacturer;
 use crate::domain::errors::DomainError;
-use crate::domain::repositories::manufacturer::ManufacturerRepository;
+use crate::domain::manufacturer::{Manufacturer, ManufacturerRepository};
+
 use asset_entity::manufacturer;
 use asset_entity::product;
 use async_trait::async_trait;

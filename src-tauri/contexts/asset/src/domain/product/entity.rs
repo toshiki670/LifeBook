@@ -1,6 +1,6 @@
 // Asset Domain - Product Entity
 
-use crate::domain::entities::MeasurementUnit;
+use super::measurement_unit::MeasurementUnit;
 use crate::domain::errors::DomainError;
 
 /// Product エンティティ（ビジネスルールを持つドメインモデル）

@@ -1,6 +1,6 @@
 // Asset Application - Asset DTO
 
-use crate::domain::entities::asset::Asset;
+use crate::domain::asset::Asset;
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 

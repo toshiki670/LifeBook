@@ -1,8 +1,9 @@
 // Asset Infrastructure - AssetTransaction Repository Implementation
 
-use crate::domain::entities::{TransactionType, asset_transaction::AssetTransaction};
+use crate::domain::asset::AssetTransactionRepository;
+use crate::domain::asset::{AssetTransaction, TransactionType};
 use crate::domain::errors::DomainError;
-use crate::domain::repositories::asset_transaction::AssetTransactionRepository;
+
 use asset_entity::asset_transaction;
 use async_trait::async_trait;
 use sea_orm::{

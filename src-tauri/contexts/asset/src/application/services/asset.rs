@@ -3,9 +3,8 @@
 use crate::application::dto::asset::AssetDto;
 use crate::application::dto::asset_transaction::AssetTransactionDto;
 use crate::application::errors::ApplicationError;
-use crate::domain::entities::{TransactionType, asset::Asset, asset_transaction::AssetTransaction};
-use crate::domain::repositories::{
-    asset::AssetRepository, asset_transaction::AssetTransactionRepository,
+use crate::domain::asset::{
+    Asset, AssetRepository, AssetTransaction, AssetTransactionRepository, TransactionType,
 };
 use chrono::NaiveDate;
 use rust_decimal::Decimal;

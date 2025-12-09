@@ -1,6 +1,6 @@
 // Asset Domain - Category Repository Interface
 
-use crate::domain::entities::category::Category;
+use super::entity::Category;
 use crate::domain::errors::DomainError;
 use async_trait::async_trait;
 use sea_orm::DatabaseTransaction;

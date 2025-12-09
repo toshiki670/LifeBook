@@ -1,6 +1,6 @@
 // Asset Application - Manufacturer DTO
 
-use crate::domain::entities::manufacturer::Manufacturer;
+use crate::domain::manufacturer::Manufacturer;
 use async_graphql::SimpleObject;
 use serde::{Deserialize, Serialize};
 

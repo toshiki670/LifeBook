@@ -1,6 +1,6 @@
 // Asset Domain - Product Repository Interface
 
-use crate::domain::entities::product::Product;
+use super::entity::Product;
 use crate::domain::errors::DomainError;
 use async_trait::async_trait;
 use sea_orm::DatabaseTransaction;

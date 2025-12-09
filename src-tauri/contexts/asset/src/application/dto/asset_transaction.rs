@@ -1,6 +1,6 @@
 // Asset Application - AssetTransaction DTO
 
-use crate::domain::entities::asset_transaction::AssetTransaction;
+use crate::domain::asset::AssetTransaction;
 use async_graphql::SimpleObject;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};

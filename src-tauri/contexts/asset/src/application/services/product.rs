@@ -3,8 +3,8 @@
 
 use crate::application::dto::product::ProductDto;
 use crate::application::errors::ApplicationError;
-use crate::domain::entities::{MeasurementUnit, product::Product};
-use crate::domain::repositories::product::ProductRepository;
+use crate::domain::product::{MeasurementUnit, Product, ProductRepository};
+
 use std::sync::Arc;
 
 pub struct ProductService {

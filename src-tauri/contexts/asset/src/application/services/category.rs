@@ -3,8 +3,8 @@
 
 use crate::application::dto::category::CategoryDto;
 use crate::application::errors::ApplicationError;
-use crate::domain::entities::category::Category;
-use crate::domain::repositories::category::CategoryRepository;
+use crate::domain::category::{Category, CategoryRepository};
+
 use sea_orm::{DatabaseConnection, TransactionTrait};
 use std::sync::Arc;
 

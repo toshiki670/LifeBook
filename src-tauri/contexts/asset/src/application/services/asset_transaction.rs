@@ -3,7 +3,8 @@
 
 use crate::application::dto::asset_transaction::AssetTransactionDto;
 use crate::application::errors::ApplicationError;
-use crate::domain::repositories::asset_transaction::AssetTransactionRepository;
+use crate::domain::asset::AssetTransactionRepository;
+
 use std::sync::Arc;
 
 pub struct AssetTransactionService {

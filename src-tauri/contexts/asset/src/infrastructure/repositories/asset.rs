@@ -1,8 +1,8 @@
 // Asset Infrastructure - Asset Repository Implementation
 
-use crate::domain::entities::asset::Asset;
+use crate::domain::asset::{Asset, AssetRepository};
 use crate::domain::errors::DomainError;
-use crate::domain::repositories::asset::AssetRepository;
+
 use asset_entity::asset;
 use async_trait::async_trait;
 use rust_decimal::Decimal;

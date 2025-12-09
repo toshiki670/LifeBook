@@ -1,9 +1,10 @@
 // Asset Infrastructure - Product Repository Implementation
 // プレースホルダー実装 - 実際の実装は後で追加
 
-use crate::domain::entities::{MeasurementUnit, product::Product};
 use crate::domain::errors::DomainError;
-use crate::domain::repositories::product::ProductRepository;
+use crate::domain::product::ProductRepository;
+use crate::domain::product::{MeasurementUnit, Product};
+
 use asset_entity::{asset, product, product_category};
 use async_trait::async_trait;
 use sea_orm::{

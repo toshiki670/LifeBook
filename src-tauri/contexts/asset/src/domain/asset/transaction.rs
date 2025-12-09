@@ -1,6 +1,6 @@
 // Asset Domain - AssetTransaction Entity
 
-use crate::domain::entities::TransactionType;
+use super::transaction_type::TransactionType;
 use crate::domain::errors::DomainError;
 use chrono::NaiveDate;
 use rust_decimal::Decimal;
