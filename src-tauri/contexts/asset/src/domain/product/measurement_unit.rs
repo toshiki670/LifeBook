@@ -1,6 +1,7 @@
 // Product Domain - Measurement Unit Value Object
 
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// Measurement Unit - 測定単位
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -22,15 +23,19 @@ impl MeasurementUnit {
             Self::Volume => "VOLUME",
         }
     }
+}
 
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for MeasurementUnit {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "PIECE" => Some(Self::Piece),
-            "BOX" => Some(Self::Box),
-            "PACK" => Some(Self::Pack),
-            "WEIGHT" => Some(Self::Weight),
-            "VOLUME" => Some(Self::Volume),
-            _ => None,
+            "PIECE" => Ok(Self::Piece),
+            "BOX" => Ok(Self::Box),
+            "PACK" => Ok(Self::Pack),
+            "WEIGHT" => Ok(Self::Weight),
+            "VOLUME" => Ok(Self::Volume),
+            _ => Err(format!("Invalid measurement unit: {}", s)),
         }
     }
 }
@@ -43,8 +48,8 @@ mod tests {
     fn test_measurement_unit_conversion() {
         assert_eq!(MeasurementUnit::Piece.as_str(), "PIECE");
         assert_eq!(
-            MeasurementUnit::from_str("PIECE"),
-            Some(MeasurementUnit::Piece)
+            "PIECE".parse::<MeasurementUnit>(),
+            Ok(MeasurementUnit::Piece)
         );
     }
 }

@@ -39,17 +39,17 @@ impl AssetTransactionRepositoryImpl {
     }
 
     fn db_to_domain(model: asset_transaction::Model) -> AssetTransaction {
-        let type_ = TransactionType::from_str(&model.type_).unwrap_or(TransactionType::Adjustment);
-        AssetTransaction::reconstruct(
-            model.id,
+        let type_ = model.type_.parse().unwrap_or(TransactionType::Adjustment);
+        AssetTransaction::reconstruct(crate::domain::asset::AssetTransactionParams {
+            id: model.id,
             type_,
-            model.transaction_date,
-            model.quantity,
-            model.unit_price,
-            model.unit_cost_at_time,
-            model.note,
-            model.asset_id,
-        )
+            transaction_date: model.transaction_date,
+            quantity: model.quantity,
+            unit_price: model.unit_price,
+            unit_cost_at_time: model.unit_cost_at_time,
+            note: model.note,
+            asset_id: model.asset_id,
+        })
     }
 }
 

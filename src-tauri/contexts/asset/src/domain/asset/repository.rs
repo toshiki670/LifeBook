@@ -1,6 +1,6 @@
 // Asset Domain - Asset Repository Interface
 
-use super::asset::Asset;
+use super::entity::Asset;
 use crate::domain::errors::DomainError;
 use async_trait::async_trait;
 use sea_orm::DatabaseTransaction;

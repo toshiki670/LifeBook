@@ -6,6 +6,18 @@ use chrono::NaiveDate;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 
+/// AssetTransaction の再構築用パラメータ
+pub struct AssetTransactionParams {
+    pub id: i32,
+    pub type_: TransactionType,
+    pub transaction_date: NaiveDate,
+    pub quantity: Decimal,
+    pub unit_price: Option<Decimal>,
+    pub unit_cost_at_time: Option<Decimal>,
+    pub note: Option<String>,
+    pub asset_id: i32,
+}
+
 /// AssetTransaction エンティティ（ビジネスルールを持つドメインモデル）
 #[derive(Debug, Clone, PartialEq)]
 pub struct AssetTransaction {
@@ -74,25 +86,16 @@ impl AssetTransaction {
     }
 
     /// 既存のトランザクションを再構築（DB から取得した場合など）
-    pub fn reconstruct(
-        id: i32,
-        type_: TransactionType,
-        transaction_date: NaiveDate,
-        quantity: Decimal,
-        unit_price: Option<Decimal>,
-        unit_cost_at_time: Option<Decimal>,
-        note: Option<String>,
-        asset_id: i32,
-    ) -> Self {
+    pub fn reconstruct(params: AssetTransactionParams) -> Self {
         Self {
-            id: Some(id),
-            type_,
-            transaction_date,
-            quantity,
-            unit_price,
-            unit_cost_at_time,
-            note,
-            asset_id,
+            id: Some(params.id),
+            type_: params.type_,
+            transaction_date: params.transaction_date,
+            quantity: params.quantity,
+            unit_price: params.unit_price,
+            unit_cost_at_time: params.unit_cost_at_time,
+            note: params.note,
+            asset_id: params.asset_id,
         }
     }
 

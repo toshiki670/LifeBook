@@ -1,6 +1,7 @@
 // Asset Domain - Transaction Type Value Object
 
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// Transaction Type - トランザクション種別
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -20,14 +21,18 @@ impl TransactionType {
             Self::Adjustment => "ADJUSTMENT",
         }
     }
+}
 
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for TransactionType {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "PURCHASE" => Some(Self::Purchase),
-            "SALE" => Some(Self::Sale),
-            "DISPOSAL" => Some(Self::Disposal),
-            "ADJUSTMENT" => Some(Self::Adjustment),
-            _ => None,
+            "PURCHASE" => Ok(Self::Purchase),
+            "SALE" => Ok(Self::Sale),
+            "DISPOSAL" => Ok(Self::Disposal),
+            "ADJUSTMENT" => Ok(Self::Adjustment),
+            _ => Err(format!("Invalid transaction type: {}", s)),
         }
     }
 }
@@ -40,8 +45,8 @@ mod tests {
     fn test_transaction_type_conversion() {
         assert_eq!(TransactionType::Purchase.as_str(), "PURCHASE");
         assert_eq!(
-            TransactionType::from_str("PURCHASE"),
-            Some(TransactionType::Purchase)
+            "PURCHASE".parse::<TransactionType>(),
+            Ok(TransactionType::Purchase)
         );
     }
 }

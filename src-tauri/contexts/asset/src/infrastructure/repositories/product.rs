@@ -47,7 +47,7 @@ impl ProductRepositoryImpl {
     }
 
     fn db_to_domain(model: product::Model) -> Product {
-        let unit = MeasurementUnit::from_str(&model.unit).unwrap_or(MeasurementUnit::Piece);
+        let unit = model.unit.parse().unwrap_or(MeasurementUnit::Piece);
         Product::reconstruct(
             model.id,
             model.name,
