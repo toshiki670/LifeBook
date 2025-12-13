@@ -1,0 +1,25 @@
+[package]
+name = "asset_entity"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[lib]
+name = "asset_entity"
+path = "src/lib.rs"
+
+[dependencies]
+chrono = { workspace = true }
+rust_decimal = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sea-orm = { workspace = true, features = [
+  "sqlx-sqlite",
+  "runtime-tokio-rustls",
+  "macros",
+] }
+
+
+

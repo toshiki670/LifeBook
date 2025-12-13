@@ -1,0 +1,28 @@
+[package]
+name = "asset_migration"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[lib]
+name = "asset_migration"
+path = "src/lib.rs"
+
+[[bin]]
+name = "asset_migration"
+path = "src/main.rs"
+
+[dependencies]
+asset_entity = { path = "../entity" }
+async-std = { version = "1", features = ["attributes", "tokio1"] }
+sea-orm-migration = { workspace = true, features = [
+  "sqlx-sqlite",
+  "runtime-tokio-rustls",
+] }
+
+
+
+

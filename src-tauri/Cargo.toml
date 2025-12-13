@@ -5,6 +5,9 @@ members = [
   "entity",
   "contexts/library",
   "contexts/settings",
+  "contexts/asset",
+  "contexts/asset/entity",
+  "contexts/asset/migration",
 ]
 resolver = "2"
 
@@ -22,13 +25,16 @@ unnecessary_wraps = "warn"
 
 [workspace.dependencies]
 # Async & Concurrency
-async-graphql = "7.0.17"
+async-graphql = { version = "7.0.17", features = ["chrono", "rust_decimal"] }
 async-trait = "0.1.89"
 tokio = "1.48.0"
 
 # Database
 sea-orm = "1.1.19"
 sea-orm-migration = "1.1.19"
+
+# Decimal
+rust_decimal = "1.36"
 
 # Serialization
 serde = "1.0.228"
